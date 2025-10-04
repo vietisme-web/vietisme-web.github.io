@@ -3,98 +3,103 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rắn Săn Mồi Simple</title>
+<title>Vietisme Chess ♟️</title>
+<link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"/>
 <style>
-  body {display:flex; flex-direction:column; align-items:center; font-family:Arial; background:#f4f4f4;}
-  h1 {margin-top:20px; color:#222;}
-  canvas {background:#000; margin-top:20px;}
-  button {padding:10px 20px; margin:10px; font-size:16px; cursor:pointer;}
+  body {font-family: Arial,sans-serif; background:#f4f4f4; margin:0; padding:0; display:flex; flex-direction:column; align-items:center;}
+  header {background:#222; color:white; width:100%; padding:20px; text-align:center;}
+  #gameContainer {display:flex; margin-top:20px; gap:20px; flex-wrap:wrap; justify-content:center;}
+  #board {width:400px;}
+  #info {width:250px; background:white; padding:15px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+  #info h2 {text-align:center;}
+  #moves {height:300px; overflow-y:auto; border:1px solid #ddd; padding:5px; background:#fafafa;}
+  button {padding:10px 15px; margin-top:10px; font-size:14px; cursor:pointer;}
 </style>
 </head>
 <body>
 
-<h1>Rắn Săn Mồi 🐍</h1>
-<canvas id="gameCanvas" width="400" height="400"></canvas>
-<button onclick="startGame()">Bắt đầu lại</button>
+<header><h1>Vietisme Chess ♟️</h1></header>
 
+<div id="gameContainer">
+  <div id="board"></div>
+  <div id="info">
+    <h2>Thông tin ván cờ</h2>
+    <div id="moves"></div>
+    <button onclick="resetGame()">Bắt đầu lại</button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
+<script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const game = new Chess();
+const board = Chessboard('board', {
+  draggable:true,
+  position:'start',
+  onDrop: handleMove
+});
+const movesDiv = document.getElementById('moves');
 
-const box = 20; // kích thước 1 ô
-let snake = [{x: 10*box, y: 10*box}];
-let direction = null;
-let food = {};
-let score = 0;
-let gameInterval;
-
-function randomFood(){
-  food = {
-    x: Math.floor(Math.random() * (canvas.width/box)) * box,
-    y: Math.floor(Math.random() * (canvas.height/box)) * box
-  };
+function updateMoves(){
+  movesDiv.innerHTML = '';
+  game.history({verbose:true}).forEach((m,i)=>{
+    const div = document.createElement('div');
+    div.textContent = (i%2===0?((i/2+1)+'. '):'') + m.san;
+    movesDiv.appendChild(div);
+  });
+  movesDiv.scrollTop = movesDiv.scrollHeight;
 }
 
-function draw(){
-  ctx.fillStyle = '#000';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
+function handleMove(source,target){
+  const move = game.move({from:source,to:target,promotion:'q'});
+  if(move===null) return 'snapback';
+  updateMoves();
+  setTimeout(botMove,300);
+}
 
-  // vẽ rắn
-  for(let i=0;i<snake.length;i++){
-    ctx.fillStyle = i===0 ? 'lime':'green';
-    ctx.fillRect(snake[i].x,snake[i].y,box,box);
-  }
+function botMove(){
+  if(game.game_over()) return;
+  const moves = game.moves({verbose:true});
 
-  // vẽ thức ăn
-  ctx.fillStyle = 'red';
-  ctx.fillRect(food.x,food.y,box,box);
-
-  // di chuyển rắn
-  let headX = snake[0].x;
-  let headY = snake[0].y;
-
-  if(direction==='LEFT') headX -= box;
-  if(direction==='RIGHT') headX += box;
-  if(direction==='UP') headY -= box;
-  if(direction==='DOWN') headY += box;
-
-  // kiểm tra ăn thức ăn
-  if(headX === food.x && headY === food.y){
-    score++;
-    randomFood();
-  } else {
-    snake.pop();
-  }
-
-  const newHead = {x: headX, y: headY};
-
-  // kiểm tra va chạm tường hoặc chính mình
-  if(headX<0 || headX>=canvas.width || headY<0 || headY>=canvas.height || snake.some(s=>s.x===headX && s.y===headY)){
-    clearInterval(gameInterval);
-    alert('Game Over! Điểm của bạn: '+score);
+  // ưu tiên ăn quân
+  const capture = moves.filter(m=>m.captured);
+  if(capture.length>0){
+    game.move(capture[Math.floor(Math.random()*capture.length)].san);
+    board.position(game.fen());
+    updateMoves();
     return;
   }
 
-  snake.unshift(newHead);
+  // nhập thành
+  const castle = moves.filter(m=>m.flags.includes('k')||m.flags.includes('q'));
+  if(castle.length>0){
+    game.move(castle[Math.floor(Math.random()*castle.length)].san);
+    board.position(game.fen());
+    updateMoves();
+    return;
+  }
+
+  // phát triển Mã/Tượng trung tâm
+  const develop = moves.filter(m=>(m.piece==='n'||m.piece==='b')&&['c3','f3','d3','e3','c6','f6','d6','e6'].includes(m.to));
+  if(develop.length>0){
+    game.move(develop[Math.floor(Math.random()*develop.length)].san);
+    board.position(game.fen());
+    updateMoves();
+    return;
+  }
+
+  // random còn lại
+  const moveRandom = moves[Math.floor(Math.random()*moves.length)];
+  game.move(moveRandom.san);
+  board.position(game.fen());
+  updateMoves();
 }
 
-document.addEventListener('keydown', e=>{
-  if(e.key==='ArrowLeft' && direction!=='RIGHT') direction='LEFT';
-  if(e.key==='ArrowRight' && direction!=='LEFT') direction='RIGHT';
-  if(e.key==='ArrowUp' && direction!=='DOWN') direction='UP';
-  if(e.key==='ArrowDown' && direction!=='UP') direction='DOWN';
-});
-
-function startGame(){
-  snake = [{x: 10*box, y: 10*box}];
-  direction = null;
-  score = 0;
-  randomFood();
-  clearInterval(gameInterval);
-  gameInterval = setInterval(draw, 100);
+function resetGame(){
+  game.reset();
+  board.start();
+  movesDiv.innerHTML='';
 }
-
-startGame();
 </script>
 
 </body>
