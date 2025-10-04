@@ -27,7 +27,7 @@ const board = Chessboard('board', {
   onDrop: handleMove
 });
 
-function handleMove(source,target) {
+function handleMove(source,target){
   const move = game.move({from:source,to:target,promotion:'q'});
   if(move===null) return 'snapback';
   setTimeout(botMove,300);
@@ -36,22 +36,8 @@ function handleMove(source,target) {
 function botMove(){
   if(game.game_over()) return;
   const moves = game.moves({verbose:true});
-  // ưu tiên ăn quân
   const capture = moves.filter(m=>m.captured);
   if(capture.length>0){game.move(capture[Math.floor(Math.random()*capture.length)].san); board.position(game.fen()); return;}
-  // nhập thành
   const castle = moves.filter(m=>m.flags.includes('k')||m.flags.includes('q'));
   if(castle.length>0){game.move(castle[Math.floor(Math.random()*castle.length)].san); board.position(game.fen()); return;}
-  // phát triển Mã/Tượng trung tâm
-  const develop = moves.filter(m=>(m.piece==='n'||m.piece==='b')&&['c3','f3','d3','e3','c6','f6','d6','e6'].includes(m.to));
-  if(develop.length>0){game.move(develop[Math.floor(Math.random()*develop.length)].san); board.position(game.fen()); return;}
-  // còn lại random
-  const move = moves[Math.floor(Math.random()*moves.length)];
-  game.move(move.san);
-  board.position(game.fen());
-}
-
-function resetGame(){game.reset(); board.start();}
-</script>
-</body>
-</html>
+  const develop = moves.filter(m=>(m.piece==='n'||m.piece==='b')&&['c3','f3',']()
