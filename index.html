@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simple Chess Bot ♟️</title>
+  <title>Vietisme Chess Bot ♟️</title>
   <link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"/>
   <style>
     body {text-align:center; font-family: Arial; background:#f4f4f4; margin:0; padding:0;}
@@ -13,7 +13,7 @@
   </style>
 </head>
 <body>
-  <h1>Simple Chess Bot ♟️</h1>
+  <h1>Vietisme Chess Bot ♟️</h1>
   <div id="board"></div>
   <button onclick="resetGame()">Bắt đầu lại</button>
 
@@ -21,7 +21,6 @@
   <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
   <script>
     const game = new Chess();
-
     const board = Chessboard('board', {
       draggable: true,
       position: 'start',
@@ -30,16 +29,45 @@
 
     function handleMove(source, target) {
       const move = game.move({from: source, to: target, promotion:'q'});
-      if (move === null) return 'snapback';
+      if(move === null) return 'snapback';
       setTimeout(makeBotMove, 300);
     }
 
     function makeBotMove() {
-      if (game.game_over()) return;
+      if(game.game_over()) return;
 
-      const moves = game.moves();
-      const move = moves[Math.floor(Math.random() * moves.length)];
-      game.move(move);
+      const moves = game.moves({verbose:true});
+
+      // 1. Ưu tiên ăn quân
+      const captureMoves = moves.filter(m => m.captured);
+      if(captureMoves.length > 0) {
+        game.move(captureMoves[Math.floor(Math.random()*captureMoves.length)].san);
+        board.position(game.fen());
+        return;
+      }
+
+      // 2. Nhập thành
+      const castlingMoves = moves.filter(m => m.flags.includes('k') || m.flags.includes('q'));
+      if(castlingMoves.length > 0) {
+        game.move(castlingMoves[Math.floor(Math.random()*castlingMoves.length)].san);
+        board.position(game.fen());
+        return;
+      }
+
+      // 3. Phát triển Mã/Tượng trung tâm
+      const developMoves = moves.filter(m => 
+        (m.piece === 'n' || m.piece === 'b') &&
+        ['c3','f3','d3','e3','c6','f6','d6','e6'].includes(m.to)
+      );
+      if(developMoves.length > 0) {
+        game.move(developMoves[Math.floor(Math.random()*developMoves.length)].san);
+        board.position(game.fen());
+        return;
+      }
+
+      // 4. Nước đi còn lại random
+      const move = moves[Math.floor(Math.random()*moves.length)];
+      game.move(move.san);
       board.position(game.fen());
     }
 
