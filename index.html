@@ -3,103 +3,123 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vietisme Chess ♟️</title>
-<link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"/>
+<title>Block Blast Clone</title>
 <style>
-  body {font-family: Arial,sans-serif; background:#f4f4f4; margin:0; padding:0; display:flex; flex-direction:column; align-items:center;}
-  header {background:#222; color:white; width:100%; padding:20px; text-align:center;}
-  #gameContainer {display:flex; margin-top:20px; gap:20px; flex-wrap:wrap; justify-content:center;}
-  #board {width:400px;}
-  #info {width:250px; background:white; padding:15px; border-radius:10px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-  #info h2 {text-align:center;}
-  #moves {height:300px; overflow-y:auto; border:1px solid #ddd; padding:5px; background:#fafafa;}
-  button {padding:10px 15px; margin-top:10px; font-size:14px; cursor:pointer;}
+  body {display:flex; flex-direction:column; align-items:center; font-family:Arial; background:#f0f0f0; margin:0; padding:20px;}
+  h1 {color:#222;}
+  #game {display:grid; grid-template-columns:repeat(9, 40px); grid-template-rows:repeat(9, 40px); gap:2px; margin-top:20px;}
+  .cell {width:40px; height:40px; background:#ccc; display:flex; justify-content:center; align-items:center; font-weight:bold; font-size:20px; cursor:pointer; border-radius:5px; transition:0.2s;}
+  #score {margin-top:20px; font-size:18px;}
+  button {padding:10px 20px; margin-top:10px; cursor:pointer; font-size:16px;}
 </style>
 </head>
 <body>
 
-<header><h1>Vietisme Chess ♟️</h1></header>
+<h1>Block Blast Clone 🟦</h1>
+<div id="game"></div>
+<div id="score">Điểm: 0</div>
+<button onclick="resetGame()">Bắt đầu lại</button>
 
-<div id="gameContainer">
-  <div id="board"></div>
-  <div id="info">
-    <h2>Thông tin ván cờ</h2>
-    <div id="moves"></div>
-    <button onclick="resetGame()">Bắt đầu lại</button>
-  </div>
-</div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
-<script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
 <script>
-const game = new Chess();
-const board = Chessboard('board', {
-  draggable:true,
-  position:'start',
-  onDrop: handleMove
-});
-const movesDiv = document.getElementById('moves');
+const rows = 9;
+const cols = 9;
+let grid = [];
+let score = 0;
+const colors = ['red','blue','green','yellow','orange','purple'];
 
-function updateMoves(){
-  movesDiv.innerHTML = '';
-  game.history({verbose:true}).forEach((m,i)=>{
-    const div = document.createElement('div');
-    div.textContent = (i%2===0?((i/2+1)+'. '):'') + m.san;
-    movesDiv.appendChild(div);
-  });
-  movesDiv.scrollTop = movesDiv.scrollHeight;
+const gameDiv = document.getElementById('game');
+const scoreDiv = document.getElementById('score');
+
+function randomColor(){ return colors[Math.floor(Math.random()*colors.length)]; }
+
+function createGrid(){
+  gameDiv.innerHTML = '';
+  grid = [];
+  for(let r=0;r<rows;r++){
+    const row = [];
+    for(let c=0;c<cols;c++){
+      const color = randomColor();
+      row.push(color);
+      const cell = document.createElement('div');
+      cell.className='cell';
+      cell.style.background=color;
+      cell.dataset.row=r;
+      cell.dataset.col=c;
+      cell.addEventListener('click', ()=>handleClick(r,c));
+      gameDiv.appendChild(cell);
+    }
+    grid.push(row);
+  }
 }
 
-function handleMove(source,target){
-  const move = game.move({from:source,to:target,promotion:'q'});
-  if(move===null) return 'snapback';
-  updateMoves();
-  setTimeout(botMove,300);
+function updateGrid(){
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const idx = r*cols + c;
+      const cellDiv = gameDiv.children[idx];
+      cellDiv.style.background = grid[r][c] || '#ccc';
+    }
+  }
 }
 
-function botMove(){
-  if(game.game_over()) return;
-  const moves = game.moves({verbose:true});
-
-  // ưu tiên ăn quân
-  const capture = moves.filter(m=>m.captured);
-  if(capture.length>0){
-    game.move(capture[Math.floor(Math.random()*capture.length)].san);
-    board.position(game.fen());
-    updateMoves();
-    return;
+function handleClick(r,c){
+  const color = grid[r][c];
+  if(!color) return;
+  const matched = [];
+  const visited = Array(rows).fill(0).map(()=>Array(cols).fill(false));
+  
+  function dfs(x,y){
+    if(x<0||y<0||x>=rows||y>=cols) return;
+    if(visited[x][y]) return;
+    if(grid[x][y]!==color) return;
+    visited[x][y]=true;
+    matched.push([x,y]);
+    dfs(x+1,y); dfs(x-1,y); dfs(x,y+1); dfs(x,y-1);
   }
+  
+  dfs(r,c);
+  if(matched.length<2) return; // ít nhất 2 ô mới nổ
+  matched.forEach(([x,y])=>grid[x][y]=null);
+  score += matched.length*10;
+  collapseGrid();
+  updateGrid();
+  scoreDiv.textContent='Điểm: '+score;
+}
 
-  // nhập thành
-  const castle = moves.filter(m=>m.flags.includes('k')||m.flags.includes('q'));
-  if(castle.length>0){
-    game.move(castle[Math.floor(Math.random()*castle.length)].san);
-    board.position(game.fen());
-    updateMoves();
-    return;
+function collapseGrid(){
+  // đẩy các ô xuống
+  for(let c=0;c<cols;c++){
+    let stack=[];
+    for(let r=rows-1;r>=0;r--){
+      if(grid[r][c]) stack.push(grid[r][c]);
+    }
+    for(let r=rows-1;r>=0;r--){
+      grid[r][c]=stack.length>0?stack.shift():null;
+    }
   }
-
-  // phát triển Mã/Tượng trung tâm
-  const develop = moves.filter(m=>(m.piece==='n'||m.piece==='b')&&['c3','f3','d3','e3','c6','f6','d6','e6'].includes(m.to));
-  if(develop.length>0){
-    game.move(develop[Math.floor(Math.random()*develop.length)].san);
-    board.position(game.fen());
-    updateMoves();
-    return;
+  // đẩy các cột sang trái nếu trống
+  let write=0;
+  for(let c=0;c<cols;c++){
+    if(grid[rows-1][c]){
+      if(c!==write){
+        for(let r=0;r<rows;r++){
+          grid[r][write]=grid[r][c];
+          grid[r][c]=null;
+        }
+      }
+      write++;
+    }
   }
-
-  // random còn lại
-  const moveRandom = moves[Math.floor(Math.random()*moves.length)];
-  game.move(moveRandom.san);
-  board.position(game.fen());
-  updateMoves();
 }
 
 function resetGame(){
-  game.reset();
-  board.start();
-  movesDiv.innerHTML='';
+  score=0;
+  scoreDiv.textContent='Điểm: 0';
+  createGrid();
 }
+
+// start
+createGrid();
 </script>
 
 </body>
