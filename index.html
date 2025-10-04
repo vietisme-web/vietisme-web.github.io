@@ -3,44 +3,25 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Vietisme Chess ♟️</title>
-  <link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css" />
+  <title>Simple Chess Bot ♟️</title>
+  <link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"/>
   <style>
-    body {font-family: Arial; background: #f4f4f4; text-align:center; margin:0; padding:0;}
-    header {background:#222; color:white; padding:20px;}
-    h1 {margin:0;}
-    section {padding:30px;}
-    .card {background:white; margin:10px auto; padding:20px; border-radius:10px; width:80%; max-width:600px; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
-    #board {width: 400px; margin: 20px auto;}
-    button {padding:10px 20px; margin:10px; font-size:16px;}
+    body {text-align:center; font-family: Arial; background:#f4f4f4; margin:0; padding:0;}
+    h1 {background:#222; color:white; margin:0; padding:20px;}
+    #board {width:400px; margin:20px auto;}
+    button {padding:10px 20px; margin:10px;}
   </style>
 </head>
 <body>
-  <header><h1>Vietisme Chess ♟️</h1></header>
-  <section>
-    <div class="card">
-      <h2>Giới thiệu</h2>
-      <p>Cờ vua là môn thể thao trí tuệ giúp rèn luyện tư duy logic và chiến lược.</p>
-    </div>
-    <div class="card">
-      <h2>Cách đi quân</h2>
-      <p>Mỗi quân cờ có cách đi riêng: Tốt đi thẳng, Mã đi chữ L, Tượng đi chéo, Xe đi ngang dọc, Hậu đi mọi hướng, và Vua đi 1 ô.</p>
-    </div>
-    <div class="card">
-      <h2>Mẹo cho người mới</h2>
-      <p>Luôn kiểm soát trung tâm, phát triển quân sớm, và bảo vệ vua bằng nhập thành.</p>
-    </div>
-    <div class="card">
-      <h2>Chơi với Bot ~1000 Elo</h2>
-      <div id="board"></div>
-      <button onclick="resetGame()">Bắt đầu lại</button>
-    </div>
-  </section>
+  <h1>Simple Chess Bot ♟️</h1>
+  <div id="board"></div>
+  <button onclick="resetGame()">Bắt đầu lại</button>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
   <script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
   <script>
     const game = new Chess();
+
     const board = Chessboard('board', {
       draggable: true,
       position: 'start',
@@ -48,27 +29,17 @@
     });
 
     function handleMove(source, target) {
-      const move = game.move({from: source, to: target, promotion: 'q'});
+      const move = game.move({from: source, to: target, promotion:'q'});
       if (move === null) return 'snapback';
-      window.setTimeout(makeBotMove, 300);
+      setTimeout(makeBotMove, 300);
     }
 
     function makeBotMove() {
       if (game.game_over()) return;
 
-      // bot ~1000 elo: chọn nước đi hợp lý cơ bản
-      const moves = game.moves({verbose: true});
-
-      // ưu tiên ăn quân nếu có
-      const captureMoves = moves.filter(m => m.captured);
-      let move;
-      if (captureMoves.length > 0) {
-        move = captureMoves[Math.floor(Math.random() * captureMoves.length)];
-      } else {
-        move = moves[Math.floor(Math.random() * moves.length)];
-      }
-
-      game.move(move.san);
+      const moves = game.moves();
+      const move = moves[Math.floor(Math.random() * moves.length)];
+      game.move(move);
       board.position(game.fen());
     }
 
