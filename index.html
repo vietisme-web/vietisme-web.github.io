@@ -3,80 +3,79 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chess Bot 1000 Elo ♟️</title>
-<link rel="stylesheet" href="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css"/>
+<title>Luật chơi & Kì thủ Cờ vua</title>
 <style>
-  body {text-align:center; font-family:Arial; background:#f4f4f4; margin:0; padding:0;}
-  h1 {background:#222; color:white; margin:0; padding:20px;}
-  #board {width:400px; margin:20px auto;}
-  button {padding:10px 20px; margin:10px; font-size:16px; cursor:pointer;}
+  body {font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:20px;}
+  h1, h2 {text-align:center;}
+  table {border-collapse: collapse; width: 90%; margin:20px auto; background:white; box-shadow:0 2px 6px rgba(0,0,0,0.1);}
+  th, td {border:1px solid #ddd; padding:8px; text-align:center;}
+  th {background:#222; color:white;}
+  tr:nth-child(even){background:#f2f2f2;}
+  tr:hover{background:#ddd;}
 </style>
 </head>
 <body>
 
-<h1>Chess Bot 1000 Elo ♟️</h1>
-<div id="board"></div>
-<button onclick="resetGame()">Bắt đầu lại</button>
+<h1>Luật chơi Cờ vua</h1>
+<table>
+  <tr>
+    <th>Quân cờ</th>
+    <th>Cách đi</th>
+    <th>Ghi chú</th>
+  </tr>
+  <tr><td>Tốt</td><td>1 ô thẳng, ăn chéo 1 ô</td><td>Phong cấp khi đến hàng cuối</td></tr>
+  <tr><td>Mã</td><td>Đi chữ L (2+1 ô)</td><td>Có thể nhảy qua quân khác</td></tr>
+  <tr><td>Tượng</td><td>Đi chéo</td><td></td></tr>
+  <tr><td>Xe</td><td>Đi thẳng ngang/dọc</td><td></td></tr>
+  <tr><td>Hậu</td><td>Đi mọi hướng</td><td>Mạnh nhất trên bàn cờ</td></tr>
+  <tr><td>Vua</td><td>1 ô mọi hướng</td><td>Quan trọng nhất, bị chiếu hết là thua</td></tr>
+</table>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
-<script src="https://unpkg.com/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-<script>
-  // Khởi tạo game và bàn cờ
-  const game = new Chess();
-  const board = Chessboard('board', {
-    draggable: true,
-    position: 'start',
-    onDrop: handleMove
-  });
-
-  function handleMove(source, target) {
-    const move = game.move({from: source, to: target, promotion: 'q'});
-    if (move === null) return 'snapback';
-    setTimeout(botMove, 300);
-  }
-
-  function botMove() {
-    if (game.game_over()) return;
-    const moves = game.moves({verbose: true});
-
-    // Ưu tiên ăn quân
-    const capture = moves.filter(m => m.captured);
-    if (capture.length > 0) {
-      game.move(capture[Math.floor(Math.random()*capture.length)].san);
-      board.position(game.fen());
-      return;
-    }
-
-    // Nhập thành
-    const castle = moves.filter(m => m.flags.includes('k') || m.flags.includes('q'));
-    if (castle.length > 0) {
-      game.move(castle[Math.floor(Math.random()*castle.length)].san);
-      board.position(game.fen());
-      return;
-    }
-
-    // Phát triển Mã/Tượng trung tâm
-    const develop = moves.filter(m => 
-      (m.piece === 'n' || m.piece === 'b') &&
-      ['c3','f3','d3','e3','c6','f6','d6','e6'].includes(m.to)
-    );
-    if (develop.length > 0) {
-      game.move(develop[Math.floor(Math.random()*develop.length)].san);
-      board.position(game.fen());
-      return;
-    }
-
-    // Random nước đi còn lại
-    const moveRandom = moves[Math.floor(Math.random()*moves.length)];
-    game.move(moveRandom.san);
-    board.position(game.fen());
-  }
-
-  function resetGame() {
-    game.reset();
-    board.start();
-  }
-</script>
+<h2>Danh sách kì thủ hàng đầu thế giới</h2>
+<table>
+  <tr>
+    <th>Tên</th>
+    <th>Quốc tịch</th>
+    <th>Năm sinh</th>
+    <th>Elo cao nhất</th>
+    <th>Thành tích nổi bật</th>
+  </tr>
+  <tr>
+    <td>Magnus Carlsen</td>
+    <td>Na Uy</td>
+    <td>1990</td>
+    <td>2882</td>
+    <td>Vua cờ thế giới 2013-2023, nhiều lần vô địch thế giới nhanh & cờ chớp</td>
+  </tr>
+  <tr>
+    <td>Garry Kasparov</td>
+    <td>Nga</td>
+    <td>1963</td>
+    <td>2851</td>
+    <td>Vô địch thế giới 1985-2000, huyền thoại cờ vua hiện đại</td>
+  </tr>
+  <tr>
+    <td>Fabiano Caruana</td>
+    <td>Mỹ</td>
+    <td>1992</td>
+    <td>2844</td>
+    <td>Thách đấu Magnus 2018, nhiều lần vô địch Mỹ & các giải mạnh thế giới</td>
+  </tr>
+  <tr>
+    <td>Hikaru Nakamura</td>
+    <td>Mỹ</td>
+    <td>1987</td>
+    <td>2816</td>
+    <td>Chuyên gia cờ nhanh & cờ chớp, streamer nổi tiếng</td>
+  </tr>
+  <tr>
+    <td>Vishwanathan Anand</td>
+    <td>Ấn Độ</td>
+    <td>1969</td>
+    <td>2817</td>
+    <td>Vô địch thế giới 2000-2013, cờ nhanh & cờ chớp xuất sắc</td>
+  </tr>
+</table>
 
 </body>
 </html>
