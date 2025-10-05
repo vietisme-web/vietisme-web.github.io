@@ -3,8 +3,6 @@ const ctx = canvas.getContext('2d');
 
 const gridSize = 8;
 const cellSize = 50;
-let score = 0;
-let comboCount = 0;
 
 // grid
 let grid = [];
@@ -88,11 +86,6 @@ function dropBlock(){
     if(canPlace(gx,gy,selectedBlock.shape)){
         placeBlock(gx,gy,selectedBlock.shape,selectedBlock.color);
         selectedBlock.placed=true;
-        comboCount++;
-        if(comboCount>=3){
-            score += 50*comboCount;
-            comboCount=0;
-        }
         checkFull();
         generateNextBlocksIfNeeded();
     } else {
@@ -125,16 +118,13 @@ function placeBlock(gx,gy,shape,color){
             if(shape[i][j]) grid[gy+i][gx+j]={color};
         }
     }
-    score += shape.flat().reduce((a,b)=>a+b,0);
 }
 
-// check xóa row/col và combo
+// check xóa row/col
 function checkFull(){
-    let combo=0;
     // rows
     for(let y=0;y<gridSize;y++){
         if(grid[y].every(c=>c)){
-            combo++;
             const color=grid[y][0].color;
             for(let x=0;x<gridSize;x++){
                 animateClear(x,y,color);
@@ -147,16 +137,12 @@ function checkFull(){
         let full=true;
         for(let y=0;y<gridSize;y++) if(!grid[y][x]) full=false;
         if(full){
-            combo++;
             const color=grid[0][x].color;
             for(let y=0;y<gridSize;y++){
                 animateClear(x,y,color);
                 grid[y][x]=null;
             }
         }
-    }
-    if(combo>0){
-        score += combo*50*combo;
     }
 }
 
@@ -202,12 +188,6 @@ function draw(){
             }
         }
     }
-
-    // bảng xếp hạng góc trên phải
-    ctx.fillStyle='white';
-    ctx.font='18px Arial';
-    ctx.fillText('Score: '+score, canvas.width-140, 30);
-    ctx.fillText('By: VietB11', canvas.width-140, 60);
 
     requestAnimationFrame(draw);
 }
