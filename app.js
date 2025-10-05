@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 const gridSize = 8;
 const cellSize = 50;
 let score = 0;
+let comboCount = 0;
 
 // grid
 let grid = [];
@@ -10,13 +11,12 @@ for(let y=0;y<gridSize;y++){
     grid.push(Array(gridSize).fill(null));
 }
 
-// colors
-function randomColor(){ 
-    const colors=['#ff6666','#66ff66','#6666ff','#ffcc66','#66ffff','#cc66ff']; 
-    return colors[Math.floor(Math.random()*colors.length)];
-}
+// colors riêng theo shape index
+const shapeColors = [
+    '#ff6666','#66ff66','#6666ff','#ffcc66','#66ffff','#cc66ff','#ff66cc'
+];
 
-// block shapes
+// shapes
 const shapes = [
     [[1]], 
     [[1,1]], 
@@ -27,14 +27,15 @@ const shapes = [
     [[1,1,1],[1,0,0],[1,0,0]]
 ];
 
-// 3 block chờ, dưới grid
+// 3 block chờ
 let blocks = [];
 function generateBlocks(){
     blocks=[];
-    const startY = gridSize*cellSize + 20; // dưới grid 8x8
+    const startY = gridSize*cellSize + 30; // dưới grid, sát bảng xếp hạng
     for(let i=0;i<3;i++){
-        const shape = shapes[Math.floor(Math.random()*shapes.length)];
-        const color = randomColor();
+        const shapeIndex = Math.floor(Math.random()*shapes.length);
+        const shape = shapes[shapeIndex];
+        const color = shapeColors[shapeIndex % shapeColors.length];
         const x = 20 + i*180;
         const y = startY;
         blocks.push({shape,color,x,y,placed:false});
@@ -42,17 +43,17 @@ function generateBlocks(){
 }
 generateBlocks();
 
+// drag & drop
 let selectedBlock = null;
 let offsetX=0, offsetY=0;
 
-// mouse & touch
 function getPos(e){
     const rect = canvas.getBoundingClientRect();
-    if(e.touches) return {x:e.touches[0].clientX - rect.left, y:e.touches[0].clientY - rect.top};
+    if(e.touches) return {x:e.touches[0].clientX-rect.left, y:e.touches[0].clientY-rect.top};
     return {x:e.offsetX, y:e.offsetY};
 }
 
-canvas.addEventListener('mousedown', e=>selectBlock(getPos(e).x,getPos(e).y));
+canvas.addEventListener('mousedown', e=>startDrag(getPos(e)));
 canvas.addEventListener('mousemove', e=>{
     if(selectedBlock){
         const pos=getPos(e);
@@ -60,42 +61,49 @@ canvas.addEventListener('mousemove', e=>{
         selectedBlock.y = pos.y - offsetY;
     }
 });
-canvas.addEventListener('mouseup', tryPlace);
+canvas.addEventListener('mouseup', dropBlock);
 
-canvas.addEventListener('touchstart', e=>{e.preventDefault(); const pos=getPos(e); selectBlock(pos.x,pos.y);});
-canvas.addEventListener('touchmove', e=>{e.preventDefault(); if(selectedBlock){const pos=getPos(e); selectedBlock.x = pos.x-offsetX; selectedBlock.y=pos.y-offsetY;}});
-canvas.addEventListener('touchend', e=>{e.preventDefault(); tryPlace();});
+canvas.addEventListener('touchstart', e=>{e.preventDefault(); startDrag(getPos(e));});
+canvas.addEventListener('touchmove', e=>{e.preventDefault(); if(selectedBlock){const pos=getPos(e); selectedBlock.x=pos.x-offsetX; selectedBlock.y=pos.y-offsetY;}});
+canvas.addEventListener('touchend', e=>{e.preventDefault(); dropBlock();});
 
-function selectBlock(mx,my){
+function startDrag(pos){
     for(let b of blocks){
         const w = b.shape[0].length*cellSize;
         const h = b.shape.length*cellSize;
-        if(mx>b.x && mx<b.x+w && my>b.y && my<b.y+h && !b.placed){
+        if(pos.x>b.x && pos.x<b.x+w && pos.y>b.y && pos.y<b.y+h && !b.placed){
             selectedBlock=b;
-            offsetX=mx-b.x;
-            offsetY=my-b.y;
+            offsetX=pos.x-b.x;
+            offsetY=pos.y-b.y;
             return;
         }
     }
 }
 
-function tryPlace(){
+function dropBlock(){
     if(!selectedBlock) return;
-    let placed=false;
-    for(let y=0;y<gridSize;y++){
-        for(let x=0;x<gridSize;x++){
-            if(canPlace(x,y,selectedBlock.shape)){
-                placeBlock(x,y,selectedBlock.shape,selectedBlock.color);
-                selectedBlock.placed=true;
-                placed=true;
-                break;
-            }
+    const gx = Math.floor(selectedBlock.x / cellSize);
+    const gy = Math.floor(selectedBlock.y / cellSize);
+    if(canPlace(gx,gy,selectedBlock.shape)){
+        placeBlock(gx,gy,selectedBlock.shape,selectedBlock.color);
+        selectedBlock.placed=true;
+        comboCount++;
+        if(comboCount>=3){
+            score += 50*comboCount;
+            comboCount=0;
         }
-        if(placed) break;
+        checkFull();
+        generateNextBlocksIfNeeded();
+    } else {
+        // trả block về vị trí cũ
+        const index = blocks.indexOf(selectedBlock);
+        selectedBlock.x = 20 + index*180;
+        selectedBlock.y = gridSize*cellSize + 30;
     }
     selectedBlock=null;
+}
 
-    // hết 3 block mới sinh batch mới
+function generateNextBlocksIfNeeded(){
     if(blocks.every(b=>b.placed)) generateBlocks();
 }
 
@@ -119,12 +127,11 @@ function placeBlock(gx,gy,shape,color){
     }
     score += shape.flat().reduce((a,b)=>a+b,0);
     document.getElementById('score').innerText="Score: "+score;
-    checkFull();
 }
 
-// check rows/cols + animation
 function checkFull(){
     let combo=0;
+    // rows
     for(let y=0;y<gridSize;y++){
         if(grid[y].every(c=>c)){
             combo++;
@@ -135,6 +142,7 @@ function checkFull(){
             }
         }
     }
+    // cols
     for(let x=0;x<gridSize;x++){
         let full=true;
         for(let y=0;y<gridSize;y++) if(!grid[y][x]) full=false;
@@ -147,11 +155,12 @@ function checkFull(){
             }
         }
     }
-    if(combo>1) score += combo*50;
-    document.getElementById('score').innerText="Score: "+score;
+    if(combo>0){
+        score += combo*50*combo;
+        document.getElementById('score').innerText="Score: "+score;
+    }
 }
 
-// animation liền block
 function animateClear(x,y,color){
     let alpha=1;
     function fade(){
@@ -168,11 +177,10 @@ function animateClear(x,y,color){
     fade();
 }
 
-// draw
 function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // draw grid
+    // grid
     for(let y=0;y<gridSize;y++){
         for(let x=0;x<gridSize;x++){
             ctx.fillStyle=grid[y][x]?grid[y][x].color:'#333';
@@ -182,7 +190,7 @@ function draw(){
         }
     }
 
-    // draw block chờ
+    // draw blocks chờ dưới bảng xếp hạng
     for(let b of blocks){
         for(let i=0;i<b.shape.length;i++){
             for(let j=0;j<b.shape[i].length;j++){
@@ -195,6 +203,13 @@ function draw(){
             }
         }
     }
+
+    // bảng xếp hạng góc phải
+    ctx.fillStyle='white';
+    ctx.font='18px Arial';
+    ctx.fillText('Bảng Xếp Hạng', canvas.width-140, 20);
+    ctx.fillText('Score: '+score, canvas.width-140, 50);
+    ctx.fillText('By: VietB11', canvas.width-140, 80);
 
     requestAnimationFrame(draw);
 }
