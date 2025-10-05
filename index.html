@@ -1,179 +1,23 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tetris Mobile 🎨</title>
-<style>
-body{display:flex;flex-direction:column;align-items:center;font-family:Arial;background:#222;color:white;margin:0;padding:20px;}
-h1{margin:0;margin-bottom:10px;color:#FFEB3B;text-align:center;}
-#tetris{display:grid;grid-template-columns:repeat(10,30px);grid-template-rows:repeat(20,30px);gap:1px;background:#111;border:2px solid #555;}
-.cell{width:30px;height:30px;background:#333;border:1px solid #222;}
-#score{margin-top:15px;font-size:20px;}
-#controls{display:flex;justify-content:center;flex-wrap:wrap;margin-top:10px;}
-.ctl{padding:15px 20px;margin:5px;background:#555;color:white;border-radius:5px;text-align:center;user-select:none;}
-.ctl:active{background:#777;}
-button{padding:10px 20px;margin-top:10px;cursor:pointer;font-size:16px;}
-</style>
+  <meta charset="UTF-8">
+  <title>Chess Main</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<h1>Tetris 🎨</h1>
-<div id="tetris"></div>
-<div id="score">Điểm: 0</div>
-<div id="controls">
-  <div id="leftBtn" class="ctl">⬅️</div>
-  <div id="rightBtn" class="ctl">➡️</div>
-  <div id="downBtn" class="ctl">⬇️</div>
-  <div id="upBtn" class="ctl">⬆️</div>
-</div>
-<button onclick="resetGame()">Bắt đầu lại</button>
-
-<script>
-const rows=20,cols=10;
-const grid=document.getElementById('tetris');
-const scoreDiv=document.getElementById('score');
-let board=[],score=0,gameOver=false;
-const colors=['#f44336','#2196F3','#4CAF50','#FFEB3B','#FF9800','#9C27B0','#00BCD4'];
-const shapes=[
-[[1,1,1,1]], // I
-[[1,1],[1,1]], // O
-[[0,1,0],[1,1,1]], // T
-[[1,1,0],[0,1,1]], // S
-[[0,1,1],[1,1,0]], // Z
-[[1,0,0],[1,1,1]], // J
-[[0,0,1],[1,1,1]]  // L
-];
-let current={shape:null,x:3,y:0,color:null};
-let dropInterval=1000,dropTimer=null;
-
-// tạo board
-function createBoard(){
-  grid.innerHTML=''; board=[];
-  for(let r=0;r<rows;r++){
-    const row=[];
-    for(let c=0;c<cols;c++){
-      const cell=document.createElement('div'); cell.className='cell';
-      grid.appendChild(cell);
-      row.push(0);
-    }
-    board.push(row);
-  }
-}
-
-// draw board
-function drawBoard(){
-  let idx=0;
-  for(let r=0;r<rows;r++){
-    for(let c=0;c<cols;c++){
-      const cell=grid.children[idx++];
-      cell.style.background=board[r][c]?board[r][c]:'#333';
-    }
-  }
-}
-
-// draw piece
-function drawPiece(flag=false){
-  current.shape.forEach((row,i)=>{
-    row.forEach((v,j)=>{
-      if(v){
-        let y=current.y+i,x=current.x+j;
-        if(y>=0 && y<rows && x>=0 && x<cols){
-          if(flag) board[y][x]=current.color;
-          else grid.children[y*cols+x].style.background=current.color;
-        }
-      }
-    });
-  });
-}
-
-// collision
-function collide(dx=0,dy=0,shape=current.shape){
-  for(let i=0;i<shape.length;i++){
-    for(let j=0;j<shape[i].length;j++){
-      if(shape[i][j]){
-        let y=current.y+i+dy,x=current.x+j+dx;
-        if(x<0||x>=cols||y>=rows) return true;
-        if(y>=0 && board[y][x]) return true;
-      }
-    }
-  }
-  return false;
-}
-
-// move piece
-function move(dx,dy){
-  if(!collide(dx,dy)) current.x+=dx,current.y+=dy;
-  else if(dy===1){
-    drawPiece(true); checkLines(); spawnPiece();
-    if(collide()) gameOver=true,clearInterval(dropTimer),alert('Game Over! Điểm của bạn: '+score);
-  }
-  drawBoard(); drawPiece();
-}
-
-// rotate
-function rotate(){
-  const shape=current.shape;
-  const newShape=shape[0].map((_,i)=>shape.map(row=>row[i]).reverse());
-  if(!collide(0,0,newShape)) current.shape=newShape;
-  drawBoard(); drawPiece();
-}
-
-// check lines
-function checkLines(){
-  let lines=0;
-  for(let r=rows-1;r>=0;r--){
-    if(board[r].every(c=>c!==0)){
-      lines++; board.splice(r,1); board.unshift(Array(cols).fill(0)); r++;
-    }
-  }
-  if(lines>0){ score+=lines*100; dropInterval=Math.max(100,dropInterval-lines*20); restartDrop(); }
-  scoreDiv.textContent='Điểm: '+score;
-}
-
-// spawn piece
-function spawnPiece(){
-  const idx=Math.floor(Math.random()*shapes.length);
-  current.shape=shapes[idx]; current.color=colors[idx];
-  current.x=3; current.y=0;
-}
-
-// restart drop interval
-function restartDrop(){
-  if(dropTimer) clearInterval(dropTimer);
-  dropTimer=setInterval(()=>{if(!gameOver) move(0,1)},dropInterval);
-}
-
-// controls
-document.addEventListener('keydown',e=>{
-  if(gameOver) return;
-  if(e.key==='ArrowLeft') move(-1,0);
-  else if(e.key==='ArrowRight') move(1,0);
-  else if(e.key==='ArrowDown') move(0,1);
-  else if(e.key==='ArrowUp') rotate();
-});
-
-// mobile buttons
-['leftBtn','rightBtn','downBtn','upBtn'].forEach(id=>{
-  const el=document.getElementById(id);
-  el.addEventListener('touchstart',e=>{
-    e.preventDefault(); // ngăn scroll
-    if(gameOver) return;
-    if(id==='leftBtn') move(-1,0);
-    if(id==='rightBtn') move(1,0);
-    if(id==='downBtn') move(0,1);
-    if(id==='upBtn') rotate();
-  },{passive:false});
-});
-
-// reset
-function resetGame(){
-  score=0;gameOver=false;dropInterval=1000;
-  createBoard(); spawnPiece(); drawBoard(); drawPiece(); restartDrop();
-}
-
-resetGame();
-</script>
-
+  <h1>Chess Online =))</h1>
+  <input type="text" id="room" placeholder="room name">
+  <button id="joinRoomBtn">Join Room</button>
+  <div id="board" style="width:400px;margin:20px auto;"></div>
+  <div id="chat">
+    <input type="text" id="chatInput" placeholder="chat here">
+    <button id="sendChat">Send</button>
+    <div id="chatBox"></div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
