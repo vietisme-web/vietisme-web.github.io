@@ -4,12 +4,10 @@ const gridSize = 8;
 const cellSize = 50;
 let score = 0;
 
-// grid 8x8
+// grid
 let grid = [];
 for(let y=0;y<gridSize;y++){
-    let row=[];
-    for(let x=0;x<gridSize;x++) row.push(null);
-    grid.push(row);
+    grid.push(Array(gridSize).fill(null));
 }
 
 // colors
@@ -18,7 +16,7 @@ function randomColor(){
     return colors[Math.floor(Math.random()*colors.length)];
 }
 
-// block shapes 1x1 → 3x3 + L-shape
+// block shapes
 const shapes = [
     [[1]], 
     [[1,1]], 
@@ -29,51 +27,56 @@ const shapes = [
     [[1,1,1],[1,0,0],[1,0,0]]
 ];
 
-// blocks chờ kéo thả
+// 3 block chờ, dưới grid
 let blocks = [];
-function generateBlock(){
-    const shape = shapes[Math.floor(Math.random()*shapes.length)];
-    const color = randomColor();
-    const x = 10 + Math.random()*(canvas.width-100);
-    const y = canvas.height - 80; // nằm dưới canvas
-    blocks.push({shape,color,x,y});
+function generateBlocks(){
+    blocks=[];
+    const startY = gridSize*cellSize + 20; // dưới grid 8x8
+    for(let i=0;i<3;i++){
+        const shape = shapes[Math.floor(Math.random()*shapes.length)];
+        const color = randomColor();
+        const x = 20 + i*180;
+        const y = startY;
+        blocks.push({shape,color,x,y,placed:false});
+    }
 }
-for(let i=0;i<3;i++) generateBlock();
+generateBlocks();
 
 let selectedBlock = null;
 let offsetX=0, offsetY=0;
 
 // mouse & touch
-function getMousePos(e){
-    const rect=canvas.getBoundingClientRect();
+function getPos(e){
+    const rect = canvas.getBoundingClientRect();
     if(e.touches) return {x:e.touches[0].clientX - rect.left, y:e.touches[0].clientY - rect.top};
     return {x:e.offsetX, y:e.offsetY};
 }
 
-canvas.addEventListener('mousedown', e=>selectBlock(getMousePos(e).x,getMousePos(e).y));
+canvas.addEventListener('mousedown', e=>selectBlock(getPos(e).x,getPos(e).y));
 canvas.addEventListener('mousemove', e=>{
     if(selectedBlock){
-        const pos=getMousePos(e);
+        const pos=getPos(e);
         selectedBlock.x = pos.x - offsetX;
         selectedBlock.y = pos.y - offsetY;
     }
 });
 canvas.addEventListener('mouseup', tryPlace);
 
-canvas.addEventListener('touchstart', e=>{e.preventDefault(); const pos=getMousePos(e); selectBlock(pos.x,pos.y);});
-canvas.addEventListener('touchmove', e=>{e.preventDefault(); if(selectedBlock){const pos=getMousePos(e); selectedBlock.x=pos.x-offsetX; selectedBlock.y=pos.y-offsetY;}});
+canvas.addEventListener('touchstart', e=>{e.preventDefault(); const pos=getPos(e); selectBlock(pos.x,pos.y);});
+canvas.addEventListener('touchmove', e=>{e.preventDefault(); if(selectedBlock){const pos=getPos(e); selectedBlock.x = pos.x-offsetX; selectedBlock.y=pos.y-offsetY;}});
 canvas.addEventListener('touchend', e=>{e.preventDefault(); tryPlace();});
 
 function selectBlock(mx,my){
-    blocks.forEach(b=>{
-        const w=cellSize*b.shape[0].length;
-        const h=cellSize*b.shape.length;
-        if(mx>b.x && mx<b.x+w && my>b.y && my<b.y+h){
+    for(let b of blocks){
+        const w = b.shape[0].length*cellSize;
+        const h = b.shape.length*cellSize;
+        if(mx>b.x && mx<b.x+w && my>b.y && my<b.y+h && !b.placed){
             selectedBlock=b;
             offsetX=mx-b.x;
             offsetY=my-b.y;
+            return;
         }
-    });
+    }
 }
 
 function tryPlace(){
@@ -83,8 +86,7 @@ function tryPlace(){
         for(let x=0;x<gridSize;x++){
             if(canPlace(x,y,selectedBlock.shape)){
                 placeBlock(x,y,selectedBlock.shape,selectedBlock.color);
-                blocks.splice(blocks.indexOf(selectedBlock),1);
-                generateBlock();
+                selectedBlock.placed=true;
                 placed=true;
                 break;
             }
@@ -92,6 +94,9 @@ function tryPlace(){
         if(placed) break;
     }
     selectedBlock=null;
+
+    // hết 3 block mới sinh batch mới
+    if(blocks.every(b=>b.placed)) generateBlocks();
 }
 
 function canPlace(gx,gy,shape){
@@ -166,6 +171,7 @@ function animateClear(x,y,color){
 // draw
 function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
+
     // draw grid
     for(let y=0;y<gridSize;y++){
         for(let x=0;x<gridSize;x++){
@@ -175,8 +181,9 @@ function draw(){
             ctx.strokeRect(x*cellSize,y*cellSize,cellSize,cellSize);
         }
     }
-    // draw blocks chờ kéo
-    blocks.forEach(b=>{
+
+    // draw block chờ
+    for(let b of blocks){
         for(let i=0;i<b.shape.length;i++){
             for(let j=0;j<b.shape[i].length;j++){
                 if(b.shape[i][j]){
@@ -187,7 +194,8 @@ function draw(){
                 }
             }
         }
-    });
+    }
+
     requestAnimationFrame(draw);
 }
 draw();
