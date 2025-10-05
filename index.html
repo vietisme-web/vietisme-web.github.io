@@ -2,141 +2,70 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pixel Survival Adventure</title>
+<title>Pixel Survival Step 1</title>
 <style>
-    html, body { margin: 0; padding: 0; overflow: hidden; background: #87CEEB; }
-    canvas { display: block; background: #87CEEB; }
+  html, body { margin: 0; padding: 0; overflow: hidden; background: #87CEEB; }
+  canvas { display: block; background: #87CEEB; }
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
 <script>
-// setup
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// game variables
+// biến player
+let player = { x: canvas.width/2, y: canvas.height/2, size: 32, speed: 3, color: 'red' };
+
+// lưu trạng thái phím
 let keys = {};
-let inventoryOpen = false;
-let player = { x: canvas.width/2, y: canvas.height/2, size: 32, color: 'red', speed: 3, weapon: null };
+
+// clouds
 let clouds = [];
-let monsters = [];
-let chests = [];
-let pets = [];
-let effects = [];
-
-// create clouds
 for(let i=0;i<5;i++){
-    clouds.push({x:Math.random()*canvas.width, y:Math.random()*100, w:100, h:50, speed:0.2+Math.random()*0.3});
+  clouds.push({x:Math.random()*canvas.width, y:Math.random()*100, w:100, h:50, speed:0.2+Math.random()*0.3});
 }
 
-// create monsters
-for(let i=0;i<5;i++){
-    monsters.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:32, color:'green', hp:100});
-}
+// lắng nghe phím
+document.addEventListener('keydown', e=> keys[e.key.toLowerCase()] = true);
+document.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
 
-// create chests
-for(let i=0;i<3;i++){
-    chests.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:32, opened:false});
-}
-
-// create pets
-for(let i=0;i<2;i++){
-    pets.push({x:player.x+Math.random()*50, y:player.y+Math.random()*50, size:16, color:'orange'});
-}
-
-// handle keys
-document.addEventListener('keydown', e=>{ keys[e.key.toLowerCase()] = true; if(e.key === 'e') inventoryOpen = !inventoryOpen;});
-document.addEventListener('keyup', e=>{ keys[e.key.toLowerCase()] = false; });
-
-// basic effect
-function createEffect(x,y,type){
-    effects.push({x,y,type,frame:0});
-}
-
-// game loop
+// update logic
 function update(){
-    // move player
-    if(keys['w']) player.y -= player.speed;
-    if(keys['s']) player.y += player.speed;
-    if(keys['a']) player.x -= player.speed;
-    if(keys['d']) player.x += player.speed;
+  if(keys['w']) player.y -= player.speed;
+  if(keys['s']) player.y += player.speed;
+  if(keys['a']) player.x -= player.speed;
+  if(keys['d']) player.x += player.speed;
 
-    // update clouds
-    clouds.forEach(c=>{ c.x += c.speed; if(c.x>canvas.width) c.x=-c.w; });
-
-    // update effects
-    effects.forEach(e=>{ e.frame++; });
-    effects = effects.filter(e=>e.frame<30);
+  clouds.forEach(c=>{
+    c.x += c.speed;
+    if(c.x>canvas.width) c.x=-c.w;
+  });
 }
 
-// draw everything
+// vẽ mọi thứ
 function draw(){
-    // sky
-    ctx.fillStyle = '#87CEEB';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#87CEEB';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    // clouds
-    clouds.forEach(c=>{
-        ctx.fillStyle = 'white';
-        ctx.beginPath();
-        ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);
-        ctx.fill();
-    });
+  clouds.forEach(c=>{
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);
+    ctx.fill();
+  });
 
-    // player
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x-player.size/2, player.y-player.size/2, player.size, player.size);
-
-    // monsters
-    monsters.forEach(m=>{
-        ctx.fillStyle = m.color;
-        ctx.fillRect(m.x-m.size/2, m.y-m.size/2, m.size, m.size);
-    });
-
-    // chests
-    chests.forEach(ch=>{
-        ctx.fillStyle = ch.opened ? 'yellow' : 'brown';
-        ctx.fillRect(ch.x-ch.size/2, ch.y-ch.size/2, ch.size, ch.size);
-    });
-
-    // pets
-    pets.forEach(p=>{
-        ctx.fillStyle = p.color;
-        ctx.fillRect(p.x-p.size/2, p.y-p.size/2, p.size, p.size);
-    });
-
-    // effects
-    effects.forEach(e=>{
-        ctx.fillStyle = e.type==='skill1'?'cyan':'magenta';
-        ctx.beginPath();
-        ctx.arc(e.x,e.y,10+e.frame,0,Math.PI*2);
-        ctx.fill();
-    });
-
-    // inventory
-    if(inventoryOpen){
-        ctx.fillStyle='rgba(0,0,0,0.5)';
-        ctx.fillRect(50,50,200,300);
-        ctx.fillStyle='white';
-        ctx.fillText('Inventory', 100, 70);
-    }
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x-player.size/2, player.y-player.size/2, player.size, player.size);
 }
-
-// skill activation
-document.addEventListener('keydown', e=>{
-    if(['1','2','3','4'].includes(e.key)){
-        createEffect(player.x, player.y, 'skill'+e.key);
-    }
-});
 
 // main loop
 function loop(){
-    update();
-    draw();
-    requestAnimationFrame(loop);
+  update();
+  draw();
+  requestAnimationFrame(loop);
 }
 
 loop();
