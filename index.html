@@ -2,1722 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Pixel Survival Step 2</title>
-<style>
-  html, body { margin: 0; padding: 0; overflow: hidden; background: #87CEEB; }
-  canvas { display: block; background: #87CEEB; }
-</style>
-</head>
-<body>
-<canvas id="game"></canvas>
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-// player
-let player = { x: canvas.width/2, y: canvas.height/2, size: 32, speed: 3, color: 'red' };
-
-// keys
-let keys = {};
-
-// clouds
-let clouds = [];
-for(let i=0;i<5;i++){
-  clouds.push({x:Math.random()*canvas.width, y:Math.random()*100, w:100, h:50, speed:0.2+Math.random()*0.3});
-}
-
-// monsters
-let monsters = [];
-for(let i=0;i<5;i++){
-  monsters.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:32, color:'green', hp:100});
-}
-
-// chests
-let chests = [];
-for(let i=0;i<3;i++){
-  chests.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:32, opened:false});
-}
-
-// pets
-let pets = [];
-for(let i=0;i<2;i++){
-  pets.push({x:player.x+Math.random()*50, y:player.y+Math.random()*50, size:16, color:'orange'});
-}
-
-// key listener
-document.addEventListener('keydown', e=> keys[e.key.toLowerCase()] = true);
-document.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
-
-// update
-function update(){
-  // player movement
-  if(keys['w']) player.y -= player.speed;
-  if(keys['s']) player.y += player.speed;
-  if(keys['a']) player.x -= player.speed;
-  if(keys['d']) player.x += player.speed;
-
-  // clouds
-  clouds.forEach(c=>{
-    c.x += c.speed;
-    if(c.x>canvas.width) c.x=-c.w;
-  });
-
-  // pets follow player
-  pets.forEach(p=>{
-    let dx = player.x - p.x;
-    let dy = player.y - p.y;
-    let dist = Math.sqrt(dx*dx + dy*dy);
-    if(dist>20){
-      p.x += dx*0.05;
-      p.y += dy*0.05;
-    }
-  });
-}
-
-// draw
-function draw(){
-  ctx.fillStyle = '#87CEEB';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // clouds
-  clouds.forEach(c=>{
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);
-    ctx.fill();
-  });
-
-  // monsters
-  monsters.forEach(m=>{
-    ctx.fillStyle = m.color;
-    ctx.fillRect(m.x-m.size/2, m.y-m.size/2, m.size, m.size);
-  });
-
-  // chests
-  chests.forEach(ch=>{
-    ctx.fillStyle = ch.opened ? 'yellow' : 'brown';
-    ctx.fillRect(ch.x-ch.size/2, ch.y-ch.size/2, ch.size, ch.size);
-  });
-
-  // pets
-  pets.forEach(p=>{
-    ctx.fillStyle = p.color;
-    ctx.fillRect(p.x-p.size/2, p.y-p.size/2, p.size, p.size);
-  });
-
-  // player
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x-player.size/2, player.y-player.size/2, player.size, player.size);
-}
-
-// main loop
-function loop(){
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
-
-loop();
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Pixel Survival Step 1</title>
-<style>
-  html, body { margin: 0; padding: 0; overflow: hidden; background: #87CEEB; }
-  canvas { display: block; background: #87CEEB; }
-</style>
-</head>
-<body>
-<canvas id="game"></canvas>
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-// biến player
-let player = { x: canvas.width/2, y: canvas.height/2, size: 32, speed: 3, color: 'red' };
-
-// lưu trạng thái phím
-let keys = {};
-
-// clouds
-let clouds = [];
-for(let i=0;i<5;i++){
-  clouds.push({x:Math.random()*canvas.width, y:Math.random()*100, w:100, h:50, speed:0.2+Math.random()*0.3});
-}
-
-// lắng nghe phím
-document.addEventListener('keydown', e=> keys[e.key.toLowerCase()] = true);
-document.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
-
-// update logic
-function update(){
-  if(keys['w']) player.y -= player.speed;
-  if(keys['s']) player.y += player.speed;
-  if(keys['a']) player.x -= player.speed;
-  if(keys['d']) player.x += player.speed;
-
-  clouds.forEach(c=>{
-    c.x += c.speed;
-    if(c.x>canvas.width) c.x=-c.w;
-  });
-}
-
-// vẽ mọi thứ
-function draw(){
-  ctx.fillStyle = '#87CEEB';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  clouds.forEach(c=>{
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);
-    ctx.fill();
-  });
-
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x-player.size/2, player.y-player.size/2, player.size, player.size);
-}
-
-// main loop
-function loop(){
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
-
-loop();
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Pixel Survival Step 3</title>
-<style>
-  html, body { margin: 0; padding: 0; overflow: hidden; background: #87CEEB; }
-  canvas { display: block; background: #87CEEB; }
-</style>
-</head>
-<body>
-<canvas id="game"></canvas>
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-// player
-let player = { x: canvas.width/2, y: canvas.height/2, size: 32, speed: 3, color: 'red' };
-
-// keys
-let keys = {};
-
-// clouds
-let clouds = [];
-for(let i=0;i<5;i++){
-  clouds.push({x:Math.random()*canvas.width, y:Math.random()*100, w:100, h:50, speed:0.2+Math.random()*0.3});
-}
-
-// monsters
-let monsters = [];
-for(let i=0;i<5;i++){
-  monsters.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:32, color:'green', hp:100});
-}
-
-// chests
-let chests = [];
-for(let i=0;i<3;i++){
-  chests.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:32, opened:false});
-}
-
-// pets
-let pets = [];
-for(let i=0;i<2;i++){
-  pets.push({x:player.x+Math.random()*50, y:player.y+Math.random()*50, size:16, color:'orange'});
-}
-
-// inventory
-let inventoryOpen = false;
-
-// effects (skill)
-let effects = [];
-
-// key listener
-document.addEventListener('keydown', e=> {
-  keys[e.key.toLowerCase()] = true;
-
-  // toggle inventory
-  if(e.key.toLowerCase() === 'i') inventoryOpen = !inventoryOpen;
-
-  // open chest
-  if(e.key.toLowerCase() === 'e'){
-    chests.forEach(ch=>{
-      let dx = player.x - ch.x;
-      let dy = player.y - ch.y;
-      if(Math.sqrt(dx*dx+dy*dy) < 50) ch.opened = true;
-    });
-  }
-
-  // skills 1-4
-  if(['1','2','3','4'].includes(e.key)){
-    effects.push({x:player.x, y:player.y, type:'skill'+e.key, frame:0});
-  }
-});
-
-document.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
-
-// update
-function update(){
-  // player movement
-  if(keys['w']) player.y -= player.speed;
-  if(keys['s']) player.y += player.speed;
-  if(keys['a']) player.x -= player.speed;
-  if(keys['d']) player.x += player.speed;
-
-  // clouds
-  clouds.forEach(c=>{
-    c.x += c.speed;
-    if(c.x>canvas.width) c.x=-c.w;
-  });
-
-  // pets follow player
-  pets.forEach(p=>{
-    let dx = player.x - p.x;
-    let dy = player.y - p.y;
-    let dist = Math.sqrt(dx*dx + dy*dy);
-    if(dist>20){
-      p.x += dx*0.05;
-      p.y += dy*0.05;
-    }
-  });
-
-  // update effects
-  effects.forEach(e=> e.frame++);
-  effects = effects.filter(e=> e.frame < 30);
-}
-
-// draw
-function draw(){
-  ctx.fillStyle = '#87CEEB';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // clouds
-  clouds.forEach(c=>{
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);
-    ctx.fill();
-  });
-
-  // monsters
-  monsters.forEach(m=>{
-    ctx.fillStyle = m.color;
-    ctx.fillRect(m.x-m.size/2, m.y-m.size/2, m.size, m.size);
-  });
-
-  // chests
-  chests.forEach(ch=>{
-    ctx.fillStyle = ch.opened ? 'yellow' : 'brown';
-    ctx.fillRect(ch.x-ch.size/2, ch.y-ch.size/2, ch.size, ch.size);
-  });
-
-  // pets
-  pets.forEach(p=>{
-    ctx.fillStyle = p.color;
-    ctx.fillRect(p.x-p.size/2, p.y-p.size/2, p.size, p.size);
-  });
-
-  // player
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x-player.size/2, player.y-player.size/2, player.size, player.size);
-
-  // effects (skills)
-  effects.forEach(e=>{
-    ctx.fillStyle = e.type==='skill1'?'cyan':'magenta';
-    ctx.beginPath();
-    ctx.arc(e.x, e.y, 10+e.frame, 0, Math.PI*2);
-    ctx.fill();
-  });
-
-  // inventory
-  if(inventoryOpen){
-    ctx.fillStyle='rgba(0,0,0,0.5)';
-    ctx.fillRect(50,50,200,300);
-    ctx.fillStyle='white';
-    ctx.fillText('Inventory', 100, 70);
-  }
-}
-
-// main loop
-function loop(){
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
-
-loop();
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Pixel Survival Step 4</title>
-<style>
-  html, body { margin:0; padding:0; overflow:hidden; background:#87CEEB; }
-  canvas { display:block; background:#87CEEB; }
-</style>
-</head>
-<body>
-<canvas id="game"></canvas>
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-// player
-let player = { x: canvas.width/2, y: canvas.height/2, size:32, speed:3, color:'red' };
-
-// keys
-let keys = {};
-
-// clouds
-let clouds = [];
-for(let i=0;i<5;i++){
-  clouds.push({x:Math.random()*canvas.width, y:Math.random()*100, w:100, h:50, speed:0.2+Math.random()*0.3});
-}
-
-// monsters
-let monsters = [];
-for(let i=0;i<5;i++){
-  monsters.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:32, color:'green', hp:100});
-}
-
-// chests
-let chests = [];
-for(let i=0;i<3;i++){
-  chests.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:32, opened:false});
-}
-
-// pets
-let pets = [];
-for(let i=0;i<2;i++){
-  pets.push({x:player.x+Math.random()*50, y:player.y+Math.random()*50, size:16, color:'orange'});
-}
-
-// inventory
-let inventoryOpen = false;
-
-// particle effects
-let effects = [];
-
-// key listener
-document.addEventListener('keydown', e=>{
-  keys[e.key.toLowerCase()] = true;
-
-  if(e.key.toLowerCase() === 'i') inventoryOpen = !inventoryOpen;
-
-  if(e.key.toLowerCase() === 'e'){
-    chests.forEach(ch=>{
-      let dx = player.x - ch.x;
-      let dy = player.y - ch.y;
-      if(Math.sqrt(dx*dx+dy*dy)<50) ch.opened=true;
-    });
-  }
-
-  if(['1','2','3','4'].includes(e.key)){
-    // tạo particle skill
-    for(let i=0;i<20;i++){
-      let angle = Math.random()*Math.PI*2;
-      let speed = Math.random()*3+1;
-      effects.push({
-        x:player.x,
-        y:player.y,
-        vx:Math.cos(angle)*speed,
-        vy:Math.sin(angle)*speed,
-        radius:5,
-        color: e.key==='1'?'cyan': e.key==='2'?'magenta': e.key==='3'?'yellow':'lime',
-        life:30
-      });
-    }
-  }
-});
-document.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
-
-// update
-function update(){
-  if(keys['w']) player.y -= player.speed;
-  if(keys['s']) player.y += player.speed;
-  if(keys['a']) player.x -= player.speed;
-  if(keys['d']) player.x += player.speed;
-
-  clouds.forEach(c=>{
-    c.x += c.speed;
-    if(c.x>canvas.width) c.x=-c.w;
-  });
-
-  pets.forEach(p=>{
-    let dx = player.x - p.x;
-    let dy = player.y - p.y;
-    let dist = Math.sqrt(dx*dx+dy*dy);
-    if(dist>20){
-      p.x += dx*0.05;
-      p.y += dy*0.05;
-    }
-  });
-
-  effects.forEach(e=>{
-    e.x += e.vx;
-    e.y += e.vy;
-    e.radius *= 0.95;
-    e.life--;
-  });
-  effects = effects.filter(e=>e.life>0);
-}
-
-// draw
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // background
-  ctx.fillStyle='#87CEEB';
-  ctx.fillRect(0,0,canvas.width,canvas.height);
-
-  // clouds
-  clouds.forEach(c=>{
-    ctx.fillStyle='white';
-    ctx.beginPath();
-    ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);
-    ctx.fill();
-  });
-
-  // monsters
-  monsters.forEach(m=>{
-    ctx.fillStyle=m.color;
-    ctx.fillRect(m.x-m.size/2, m.y-m.size/2, m.size, m.size);
-  });
-
-  // chests
-  chests.forEach(ch=>{
-    ctx.fillStyle = ch.opened?'yellow':'brown';
-    ctx.fillRect(ch.x-ch.size/2, ch.y-ch.size/2, ch.size, ch.size);
-  });
-
-  // pets
-  pets.forEach(p=>{
-    ctx.fillStyle=p.color;
-    ctx.fillRect(p.x-p.size/2, p.y-p.size/2, p.size, p.size);
-  });
-
-  // player glow
-  ctx.save();
-  ctx.shadowColor='white';
-  ctx.shadowBlur=20;
-  ctx.fillStyle=player.color;
-  ctx.fillRect(player.x-player.size/2, player.y-player.size/2, player.size, player.size);
-  ctx.restore();
-
-  // skill particles
-  effects.forEach(e=>{
-    ctx.save();
-    ctx.globalAlpha = e.life/30;
-    ctx.fillStyle = e.color;
-    ctx.beginPath();
-    ctx.arc(e.x,e.y,e.radius,0,Math.PI*2);
-    ctx.fill();
-    ctx.restore();
-  });
-
-  // inventory
-  if(inventoryOpen){
-    ctx.fillStyle='rgba(0,0,0,0.5)';
-    ctx.fillRect(50,50,200,300);
-    ctx.fillStyle='white';
-    ctx.fillText('Inventory',100,70);
-  }
-}
-
-// loop
-function loop(){
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
-loop();
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Pixel Survival Step 5</title>
-<style>
-  html, body { margin:0; padding:0; overflow:hidden; background:#87CEEB; }
-  canvas { display:block; background:#87CEEB; }
-</style>
-</head>
-<body>
-<canvas id="game"></canvas>
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-// player
-let player = { x:500, y:500, size:32, speed:3, color:'red' };
-
-// keys
-let keys = {};
-
-// map tiles
-const tileSize = 64;
-const mapWidth = 30;
-const mapHeight = 20;
-
-// generate map (random ground/water)
-let map = [];
-for(let y=0;y<mapHeight;y++){
-  let row = [];
-  for(let x=0;x<mapWidth;x++){
-    row.push(Math.random()<0.1?'water':'grass');
-  }
-  map.push(row);
-}
-
-// clouds
-let clouds = [];
-for(let i=0;i<5;i++) clouds.push({x:Math.random()*canvas.width, y:Math.random()*100, w:100, h:50, speed:0.2+Math.random()*0.3});
-
-// monsters
-let monsters = [];
-for(let i=0;i<10;i++){
-  monsters.push({
-    x:Math.random()*mapWidth*tileSize,
-    y:Math.random()*mapHeight*tileSize,
-    size:32, color:'green', hp:100,
-    vx:(Math.random()-0.5)*2, vy:(Math.random()-0.5)*2
-  });
-}
-
-// chests
-let chests = [];
-for(let i=0;i<10;i++){
-  chests.push({
-    x:Math.random()*mapWidth*tileSize,
-    y:Math.random()*mapHeight*tileSize,
-    size:32, opened:false
-  });
-}
-
-// pets
-let pets = [];
-for(let i=0;i<2;i++) pets.push({x:player.x+Math.random()*50, y:player.y+Math.random()*50, size:16, color:'orange'});
-
-// inventory
-let inventoryOpen = false;
-
-// particle effects
-let effects = [];
-
-// key listener
-document.addEventListener('keydown', e=>{
-  keys[e.key.toLowerCase()] = true;
-  if(e.key.toLowerCase() === 'i') inventoryOpen = !inventoryOpen;
-
-  if(e.key.toLowerCase() === 'e'){
-    chests.forEach(ch=>{
-      let dx = player.x - ch.x;
-      let dy = player.y - ch.y;
-      if(Math.sqrt(dx*dx+dy*dy)<50) ch.opened=true;
-    });
-  }
-
-  if(['1','2','3','4'].includes(e.key)){
-    for(let i=0;i<20;i++){
-      let angle = Math.random()*Math.PI*2;
-      let speed = Math.random()*3+1;
-      effects.push({
-        x:player.x, y:player.y,
-        vx:Math.cos(angle)*speed,
-        vy:Math.sin(angle)*speed,
-        radius:5,
-        color: e.key==='1'?'cyan': e.key==='2'?'magenta': e.key==='3'?'yellow':'lime',
-        life:30
-      });
-    }
-  }
-});
-document.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
-
-// update
-function update(){
-  // player movement
-  if(keys['w']) player.y -= player.speed;
-  if(keys['s']) player.y += player.speed;
-  if(keys['a']) player.x -= player.speed;
-  if(keys['d']) player.x += player.speed;
-
-  // clouds
-  clouds.forEach(c=>{
-    c.x += c.speed;
-    if(c.x>canvas.width) c.x=-c.w;
-  });
-
-  // pets follow player
-  pets.forEach(p=>{
-    let dx = player.x - p.x;
-    let dy = player.y - p.y;
-    let dist = Math.sqrt(dx*dx+dy*dy);
-    if(dist>20){
-      p.x += dx*0.05;
-      p.y += dy*0.05;
-    }
-  });
-
-  // monsters AI move
-  monsters.forEach(m=>{
-    m.x += m.vx;
-    m.y += m.vy;
-    if(m.x<0 || m.x>mapWidth*tileSize) m.vx*=-1;
-    if(m.y<0 || m.y>mapHeight*tileSize) m.vy*=-1;
-  });
-
-  // effects
-  effects.forEach(e=>{
-    e.x += e.vx;
-    e.y += e.vy;
-    e.radius *= 0.95;
-    e.life--;
-  });
-  effects = effects.filter(e=>e.life>0);
-}
-
-// draw
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // draw map tiles
-  for(let y=0;y<mapHeight;y++){
-    for(let x=0;x<mapWidth;x++){
-      ctx.fillStyle = map[y][x]==='grass'?'#7cfc00':'#1e90ff';
-      ctx.fillRect(x*tileSize, y*tileSize, tileSize, tileSize);
-    }
-  }
-
-  // clouds
-  clouds.forEach(c=>{
-    ctx.fillStyle='white';
-    ctx.beginPath();
-    ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);
-    ctx.fill();
-  });
-
-  // monsters
-  monsters.forEach(m=>{
-    ctx.fillStyle=m.color;
-    ctx.fillRect(m.x-m.size/2, m.y-m.size/2, m.size, m.size);
-  });
-
-  // chests
-  chests.forEach(ch=>{
-    ctx.fillStyle=ch.opened?'yellow':'brown';
-    ctx.fillRect(ch.x-ch.size/2, ch.y-ch.size/2, ch.size, ch.size);
-  });
-
-  // pets
-  pets.forEach(p=>{
-    ctx.fillStyle=p.color;
-    ctx.fillRect(p.x-p.size/2, p.y-p.size/2, p.size, p.size);
-  });
-
-  // player glow
-  ctx.save();
-  ctx.shadowColor='white';
-  ctx.shadowBlur=20;
-  ctx.fillStyle=player.color;
-  ctx.fillRect(player.x-player.size/2, player.y-player.size/2, player.size, player.size);
-  ctx.restore();
-
-  // particle effects
-  effects.forEach(e=>{
-    ctx.save();
-    ctx.globalAlpha = e.life/30;
-    ctx.fillStyle = e.color;
-    ctx.beginPath();
-    ctx.arc(e.x,e.y,e.radius,0,Math.PI*2);
-    ctx.fill();
-    ctx.restore();
-  });
-
-  // inventory
-  if(inventoryOpen){
-    ctx.fillStyle='rgba(0,0,0,0.5)';
-    ctx.fillRect(50,50,200,300);
-    ctx.fillStyle='white';
-    ctx.fillText('Inventory',100,70);
-  }
-}
-
-// loop
-function loop(){
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
-loop();
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Pixel Survival Step 6</title>
-<style>
-  html, body { margin:0; padding:0; overflow:hidden; background:#87CEEB; }
-  canvas { display:block; background:#87CEEB; }
-</style>
-</head>
-<body>
-<canvas id="game"></canvas>
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-// player
-let player = { x:500, y:500, size:32, speed:3, color:'red', weapon:'sword' };
-
-// keys
-let keys = {};
-
-// map tiles
-const tileSize = 64;
-const mapWidth = 30;
-const mapHeight = 20;
-
-// map
-let map = [];
-for(let y=0;y<mapHeight;y++){
-  let row = [];
-  for(let x=0;x<mapWidth;x++){
-    row.push(Math.random()<0.1?'water':'grass');
-  }
-  map.push(row);
-}
-
-// clouds
-let clouds = [];
-for(let i=0;i<5;i++) clouds.push({x:Math.random()*canvas.width, y:Math.random()*100, w:100, h:50, speed:0.2+Math.random()*0.3});
-
-// monsters
-let monsters = [];
-for(let i=0;i<10;i++){
-  monsters.push({
-    x:Math.random()*mapWidth*tileSize,
-    y:Math.random()*mapHeight*tileSize,
-    size:32, color:'green', hp:100,
-    vx:(Math.random()-0.5)*2, vy:(Math.random()-0.5)*2
-  });
-}
-
-// chests
-let chests = [];
-for(let i=0;i<10;i++){
-  chests.push({
-    x:Math.random()*mapWidth*tileSize,
-    y:Math.random()*mapHeight*tileSize,
-    size:32, opened:false
-  });
-}
-
-// pets
-let pets = [];
-for(let i=0;i<2;i++){
-  pets.push({x:player.x+Math.random()*50, y:player.y+Math.random()*50, size:16, color:'orange', damage:5});
-}
-
-// inventory
-let inventoryOpen = false;
-let items = []; // item rơi ra
-
-// particle effects
-let effects = [];
-
-// key listener
-document.addEventListener('keydown', e=>{
-  keys[e.key.toLowerCase()] = true;
-  if(e.key.toLowerCase() === 'i') inventoryOpen = !inventoryOpen;
-
-  if(e.key.toLowerCase() === 'e'){
-    chests.forEach(ch=>{
-      let dx = player.x - ch.x;
-      let dy = player.y - ch.y;
-      if(Math.sqrt(dx*dx+dy*dy)<50 && !ch.opened){
-        ch.opened=true;
-        // rương rơi ra item
-        items.push({x:ch.x, y:ch.y, size:16, color:'gold', type:'coin'});
-      }
-    });
-  }
-
-  if(['1','2','3','4'].includes(e.key)){
-    // skill particles trail
-    for(let i=0;i<25;i++){
-      let angle = Math.random()*Math.PI*2;
-      let speed = Math.random()*4;
-      effects.push({
-        x:player.x, y:player.y,
-        vx:Math.cos(angle)*speed,
-        vy:Math.sin(angle)*speed,
-        radius:5,
-        color: e.key==='1'?'cyan': e.key==='2'?'magenta': e.key==='3'?'yellow':'lime',
-        life:40,
-        trail:[{x:player.x, y:player.y}]
-      });
-    }
-  }
-});
-document.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
-
-// update
-function update(){
-  if(keys['w']) player.y -= player.speed;
-  if(keys['s']) player.y += player.speed;
-  if(keys['a']) player.x -= player.speed;
-  if(keys['d']) player.x += player.speed;
-
-  clouds.forEach(c=>{
-    c.x += c.speed;
-    if(c.x>canvas.width) c.x=-c.w;
-  });
-
-  // pets follow player
-  pets.forEach(p=>{
-    let dx = player.x - p.x;
-    let dy = player.y - p.y;
-    let dist = Math.sqrt(dx*dx+dy*dy);
-    if(dist>20){
-      p.x += dx*0.05;
-      p.y += dy*0.05;
-    }
-  });
-
-  // monsters move
-  monsters.forEach(m=>{
-    m.x += m.vx;
-    m.y += m.vy;
-    if(m.x<0||m.x>mapWidth*tileSize) m.vx*=-1;
-    if(m.y<0||m.y>mapHeight*tileSize) m.vy*=-1;
-  });
-
-  // effects
-  effects.forEach(e=>{
-    e.x += e.vx;
-    e.y += e.vy;
-    e.radius *= 0.95;
-    e.life--;
-    // trail
-    e.trail.push({x:e.x, y:e.y});
-    if(e.trail.length>10) e.trail.shift();
-  });
-  effects = effects.filter(e=>e.life>0);
-
-  // player pick up items
-  items.forEach((it,idx)=>{
-    let dx = player.x - it.x;
-    let dy = player.y - it.y;
-    if(Math.sqrt(dx*dx+dy*dy)<30){
-      items.splice(idx,1);
-      // add to inventory
-      // could extend later
-    }
-  });
-}
-
-// draw
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // map tiles
-  for(let y=0;y<mapHeight;y++){
-    for(let x=0;x<mapWidth;x++){
-      ctx.fillStyle = map[y][x]==='grass'?'#7cfc00':'#1e90ff';
-      ctx.fillRect(x*tileSize, y*tileSize, tileSize, tileSize);
-    }
-  }
-
-  // clouds
-  clouds.forEach(c=>{
-    ctx.fillStyle='white';
-    ctx.beginPath();
-    ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);
-    ctx.fill();
-  });
-
-  // monsters
-  monsters.forEach(m=>{
-    ctx.fillStyle=m.color;
-    ctx.fillRect(m.x-m.size/2, m.y-m.size/2, m.size, m.size);
-  });
-
-  // chests
-  chests.forEach(ch=>{
-    ctx.fillStyle = ch.opened?'yellow':'brown';
-    ctx.fillRect(ch.x-ch.size/2, ch.y-ch.size/2, ch.size, ch.size);
-  });
-
-  // pets
-  pets.forEach(p=>{
-    ctx.fillStyle=p.color;
-    ctx.fillRect(p.x-p.size/2, p.y-p.size/2, p.size, p.size);
-  });
-
-  // items
-  items.forEach(it=>{
-    ctx.fillStyle = it.color;
-    ctx.fillRect(it.x-it.size/2, it.y-it.size/2, it.size, it.size);
-  });
-
-  // player glow + weapon (simple)
-  ctx.save();
-  ctx.shadowColor='white';
-  ctx.shadowBlur=20;
-  ctx.fillStyle=player.color;
-  ctx.fillRect(player.x-player.size/2, player.y-player.size/2, player.size, player.size);
-  // weapon as rectangle
-  ctx.fillStyle='silver';
-  ctx.fillRect(player.x+player.size/2, player.y-5, 20,10);
-  ctx.restore();
-
-  // skill particles
-  effects.forEach(e=>{
-    ctx.save();
-    ctx.globalAlpha = e.life/40;
-    // draw trail
-    ctx.strokeStyle = e.color;
-    ctx.beginPath();
-    ctx.moveTo(e.trail[0].x,e.trail[0].y);
-    for(let i=1;i<e.trail.length;i++){
-      ctx.lineTo(e.trail[i].x, e.trail[i].y);
-    }
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.fillStyle = e.color;
-    ctx.arc(e.x,e.y,e.radius,0,Math.PI*2);
-    ctx.fill();
-    ctx.restore();
-  });
-
-  // inventory
-  if(inventoryOpen){
-    ctx.fillStyle='rgba(0,0,0,0.5)';
-    ctx.fillRect(50,50,200,300);
-    ctx.fillStyle='white';
-    ctx.fillText('Inventory',100,70);
-  }
-}
-
-// loop
-function loop(){
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
-loop();
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Pixel Survival Step 7</title>
-<style>
-  html, body { margin:0; padding:0; overflow:hidden; background:#87CEEB; }
-  canvas { display:block; background:#87CEEB; }
-</style>
-</head>
-<body>
-<canvas id="game"></canvas>
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-// player
-let player = { x:500, y:500, size:32, speed:3, color:'red', weapon:'sword' };
-
-// keys
-let keys = {};
-
-// map tiles
-const tileSize = 64;
-const mapWidth = 30;
-const mapHeight = 20;
-let map = [];
-for(let y=0;y<mapHeight;y++){
-  let row=[];
-  for(let x=0;x<mapWidth;x++) row.push(Math.random()<0.1?'water':'grass');
-  map.push(row);
-}
-
-// clouds
-let clouds = [];
-for(let i=0;i<5;i++) clouds.push({x:Math.random()*canvas.width, y:Math.random()*100, w:100, h:50, speed:0.2+Math.random()*0.3});
-
-// monsters
-let monsters = [];
-for(let i=0;i<10;i++){
-  monsters.push({
-    x:Math.random()*mapWidth*tileSize,
-    y:Math.random()*mapHeight*tileSize,
-    size:32, color:'green', hp:100,
-    vx:(Math.random()-0.5)*2, vy:(Math.random()-0.5)*2
-  });
-}
-
-// chests
-let chests = [];
-for(let i=0;i<10;i++){
-  chests.push({x:Math.random()*mapWidth*tileSize, y:Math.random()*mapHeight*tileSize, size:32, opened:false});
-});
-
-// pets
-let pets = [];
-for(let i=0;i<2;i++) pets.push({x:player.x+Math.random()*50, y:player.y+Math.random()*50, size:16, color:'orange', damage:5});
-
-// inventory
-let inventoryOpen = false;
-let items = [];
-
-// particle effects
-let effects = [];
-
-// key listener
-document.addEventListener('keydown', e=>{
-  keys[e.key.toLowerCase()] = true;
-  if(e.key.toLowerCase() === 'i') inventoryOpen = !inventoryOpen;
-
-  if(e.key.toLowerCase() === 'e'){
-    chests.forEach(ch=>{
-      let dx = player.x - ch.x;
-      let dy = player.y - ch.y;
-      if(Math.sqrt(dx*dx+dy*dy)<50 && !ch.opened){
-        ch.opened=true;
-        items.push({x:ch.x, y:ch.y, size:16, color:'gold', type:'coin'});
-      }
-    });
-  }
-
-  if(['1','2','3','4'].includes(e.key)){
-    for(let i=0;i<25;i++){
-      let angle = Math.random()*Math.PI*2;
-      let speed = Math.random()*4+1;
-      effects.push({
-        x:player.x, y:player.y,
-        vx:Math.cos(angle)*speed,
-        vy:Math.sin(angle)*speed,
-        radius:5,
-        color: e.key==='1'?'cyan': e.key==='2'?'magenta': e.key==='3'?'yellow':'lime',
-        life:50,
-        trail:[{x:player.x, y:player.y}]
-      });
-    }
-  }
-});
-document.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
-
-// update
-function update(){
-  if(keys['w']) player.y -= player.speed;
-  if(keys['s']) player.y += player.speed;
-  if(keys['a']) player.x -= player.speed;
-  if(keys['d']) player.x += player.speed;
-
-  clouds.forEach(c=>{c.x+=c.speed;if(c.x>canvas.width)c.x=-c.w;});
-
-  pets.forEach(p=>{
-    let dx=player.x-p.x, dy=player.y-p.y;
-    if(Math.sqrt(dx*dx+dy*dy)>20){p.x+=dx*0.05; p.y+=dy*0.05;}
-  });
-
-  monsters.forEach(m=>{
-    m.x+=m.vx; m.y+=m.vy;
-    if(m.x<0||m.x>mapWidth*tileSize)m.vx*=-1;
-    if(m.y<0||m.y>mapHeight*tileSize)m.vy*=-1;
-  });
-
-  effects.forEach(e=>{
-    e.x+=e.vx; e.y+=e.vy; e.radius*=0.95; e.life--;
-    e.trail.push({x:e.x,y:e.y}); if(e.trail.length>15) e.trail.shift();
-  });
-  effects = effects.filter(e=>e.life>0);
-
-  items.forEach((it,idx)=>{
-    let dx=player.x-it.x, dy=player.y-it.y;
-    if(Math.sqrt(dx*dx+dy*dy)<30){ items.splice(idx,1); }
-  });
-}
-
-// draw
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // map tiles
-  for(let y=0;y<mapHeight;y++){
-    for(let x=0;x<mapWidth;x++){
-      ctx.fillStyle=map[y][x]==='grass'?'#7cfc00':'#1e90ff';
-      ctx.fillRect(x*tileSize,y*tileSize,tileSize,tileSize);
-    }
-  }
-
-  // clouds
-  clouds.forEach(c=>{ctx.fillStyle='white';ctx.beginPath();ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);ctx.fill();});
-
-  // monsters
-  monsters.forEach(m=>{ctx.fillStyle=m.color;ctx.fillRect(m.x-m.size/2,m.y-m.size/2,m.size,m.size);});
-
-  // chests
-  chests.forEach(ch=>{ctx.fillStyle=ch.opened?'yellow':'brown';ctx.fillRect(ch.x-ch.size/2,ch.y-ch.size/2,ch.size,ch.size);});
-
-  // pets
-  pets.forEach(p=>{ctx.fillStyle=p.color;ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);});
-
-  // items
-  items.forEach(it=>{ctx.fillStyle=it.color;ctx.fillRect(it.x-it.size/2,it.y-it.size/2,it.size,it.size);});
-
-  // player glow + weapon
-  ctx.save();
-  ctx.shadowColor='white'; ctx.shadowBlur=30;
-  ctx.fillStyle=player.color;
-  ctx.fillRect(player.x-player.size/2,player.y-player.size/2,player.size,player.size);
-  ctx.fillStyle='silver';
-  ctx.fillRect(player.x+player.size/2,player.y-5,20,10);
-  ctx.restore();
-
-  // skill particles with smooth trail + glow
-  effects.forEach(e=>{
-    ctx.save();
-    ctx.globalAlpha=e.life/50;
-    ctx.strokeStyle=e.color;
-    ctx.lineWidth=2;
-    ctx.beginPath();
-    ctx.moveTo(e.trail[0].x,e.trail[0].y);
-    for(let i=1;i<e.trail.length;i++) ctx.lineTo(e.trail[i].x,e.trail[i].y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.fillStyle=e.color;
-    ctx.shadowColor=e.color;
-    ctx.shadowBlur=15;
-    ctx.arc(e.x,e.y,e.radius,0,Math.PI*2);
-    ctx.fill();
-    ctx.restore();
-  });
-
-  // inventory
-  if(inventoryOpen){
-    ctx.fillStyle='rgba(0,0,0,0.5)';
-    ctx.fillRect(50,50,200,300);
-    ctx.fillStyle='white';
-    ctx.fillText('Inventory',100,70);
-  }
-}
-
-// loop
-function loop(){ update(); draw(); requestAnimationFrame(loop);}
-loop();
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Pixel Survival Step 8</title>
-<style>
-  html, body { margin:0; padding:0; overflow:hidden; background:#87CEEB; }
-  canvas { display:block; background:#87CEEB; }
-</style>
-</head>
-<body>
-<canvas id="game"></canvas>
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-// player
-let player = { x:500, y:500, size:32, speed:3, color:'red', weapon:'sword', hp:100, maxHp:100, mana:50, maxMana:50, gold:0 };
-
-// keys
-let keys = {};
-
-// map tiles
-const tileSize = 64;
-const mapWidth = 30;
-const mapHeight = 20;
-let map = [];
-for(let y=0;y<mapHeight;y++){
-  let row=[];
-  for(let x=0;x<mapWidth;x++) row.push(Math.random()<0.1?'water':'grass');
-  map.push(row);
-}
-
-// clouds
-let clouds = [];
-for(let i=0;i<5;i++) clouds.push({x:Math.random()*canvas.width, y:Math.random()*100, w:100, h:50, speed:0.2+Math.random()*0.3});
-
-// monsters
-let monsters = [];
-for(let i=0;i<10;i++){
-  monsters.push({
-    x:Math.random()*mapWidth*tileSize,
-    y:Math.random()*mapHeight*tileSize,
-    size:32, color:'green', hp:100,
-    vx:(Math.random()-0.5)*2, vy:(Math.random()-0.5)*2
-  });
-}
-
-// chests
-let chests = [];
-for(let i=0;i<10;i++){
-  chests.push({x:Math.random()*mapWidth*tileSize, y:Math.random()*mapHeight*tileSize, size:32, opened:false});
-});
-
-// pets
-let pets = [];
-for(let i=0;i<2;i++) pets.push({x:player.x+Math.random()*50, y:player.y+Math.random()*50, size:16, color:'orange', damage:5});
-
-// inventory
-let inventoryOpen = false;
-let items = [];
-
-// particle effects
-let effects = [];
-
-// key listener
-document.addEventListener('keydown', e=>{
-  keys[e.key.toLowerCase()] = true;
-  if(e.key.toLowerCase() === 'i') inventoryOpen = !inventoryOpen;
-
-  if(e.key.toLowerCase() === 'e'){
-    chests.forEach(ch=>{
-      let dx = player.x - ch.x;
-      let dy = player.y - ch.y;
-      if(Math.sqrt(dx*dx+dy*dy)<50 && !ch.opened){
-        ch.opened=true;
-        items.push({x:ch.x, y:ch.y, size:16, color:'gold', type:'coin'});
-      }
-    });
-  }
-
-  if(['1','2','3','4'].includes(e.key)){
-    for(let i=0;i<25;i++){
-      let angle = Math.random()*Math.PI*2;
-      let speed = Math.random()*4+1;
-      effects.push({
-        x:player.x, y:player.y,
-        vx:Math.cos(angle)*speed,
-        vy:Math.sin(angle)*speed,
-        radius:5,
-        color: e.key==='1'?'cyan': e.key==='2'?'magenta': e.key==='3'?'yellow':'lime',
-        life:50,
-        trail:[{x:player.x, y:player.y}]
-      });
-    }
-  }
-});
-document.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
-
-// update
-function update(){
-  if(keys['w']) player.y -= player.speed;
-  if(keys['s']) player.y += player.speed;
-  if(keys['a']) player.x -= player.speed;
-  if(keys['d']) player.x += player.speed;
-
-  clouds.forEach(c=>{c.x+=c.speed;if(c.x>canvas.width)c.x=-c.w;});
-
-  pets.forEach(p=>{
-    let dx=player.x-p.x, dy=player.y-p.y;
-    if(Math.sqrt(dx*dx+dy*dy)>20){p.x+=dx*0.05; p.y+=dy*0.05;}
-  });
-
-  monsters.forEach(m=>{
-    m.x+=m.vx; m.y+=m.vy;
-    if(m.x<0||m.x>mapWidth*tileSize)m.vx*=-1;
-    if(m.y<0||m.y>mapHeight*tileSize)m.vy*=-1;
-  });
-
-  effects.forEach(e=>{
-    e.x+=e.vx; e.y+=e.vy; e.radius*=0.95; e.life--;
-    e.trail.push({x:e.x,y:e.y}); if(e.trail.length>15) e.trail.shift();
-  });
-  effects = effects.filter(e=>e.life>0);
-
-  items.forEach((it,idx)=>{
-    let dx=player.x-it.x, dy=player.y-it.y;
-    if(Math.sqrt(dx*dx+dy*dy)<30){ items.splice(idx,1); player.gold++; }
-  });
-}
-
-// draw
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // map tiles
-  for(let y=0;y<mapHeight;y++){
-    for(let x=0;x<mapWidth;x++){
-      ctx.fillStyle=map[y][x]==='grass'?'#7cfc00':'#1e90ff';
-      ctx.fillRect(x*tileSize,y*tileSize,tileSize,tileSize);
-    }
-  }
-
-  // clouds
-  clouds.forEach(c=>{ctx.fillStyle='white';ctx.beginPath();ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);ctx.fill();});
-
-  // monsters
-  monsters.forEach(m=>{ctx.fillStyle=m.color;ctx.fillRect(m.x-m.size/2,m.y-m.size/2,m.size,m.size);});
-
-  // chests
-  chests.forEach(ch=>{ctx.fillStyle=ch.opened?'yellow':'brown';ctx.fillRect(ch.x-ch.size/2,ch.y-ch.size/2,ch.size,ch.size);});
-
-  // pets
-  pets.forEach(p=>{ctx.fillStyle=p.color;ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);});
-
-  // items
-  items.forEach(it=>{ctx.fillStyle=it.color;ctx.fillRect(it.x-it.size/2,it.y-it.size/2,it.size,it.size);});
-
-  // player glow + weapon
-  ctx.save();
-  ctx.shadowColor='white'; ctx.shadowBlur=30;
-  ctx.fillStyle=player.color;
-  ctx.fillRect(player.x-player.size/2,player.y-player.size/2,player.size,player.size);
-  ctx.fillStyle='silver';
-  ctx.fillRect(player.x+player.size/2,player.y-5,20,10);
-  ctx.restore();
-
-  // skill particles
-  effects.forEach(e=>{
-    ctx.save();
-    ctx.globalAlpha=e.life/50;
-    ctx.strokeStyle=e.color;
-    ctx.lineWidth=2;
-    ctx.beginPath();
-    ctx.moveTo(e.trail[0].x,e.trail[0].y);
-    for(let i=1;i<e.trail.length;i++) ctx.lineTo(e.trail[i].x,e.trail[i].y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.fillStyle=e.color;
-    ctx.shadowColor=e.color;
-    ctx.shadowBlur=15;
-    ctx.arc(e.x,e.y,e.radius,0,Math.PI*2);
-    ctx.fill();
-    ctx.restore();
-  });
-
-  // UI: health bar
-  ctx.fillStyle='black'; ctx.fillRect(20,20,200,20);
-  ctx.fillStyle='red'; ctx.fillRect(20,20,200*(player.hp/player.maxHp),20);
-  ctx.strokeStyle='white'; ctx.strokeRect(20,20,200,20);
-
-  // UI: mana bar
-  ctx.fillStyle='black'; ctx.fillRect(20,45,200,10);
-  ctx.fillStyle='blue'; ctx.fillRect(20,45,200*(player.mana/player.maxMana),10);
-  ctx.strokeStyle='white'; ctx.strokeRect(20,45,200,10);
-
-  // UI: skill bar
-  for(let i=0;i<4;i++){
-    ctx.fillStyle='gray'; ctx.fillRect(20+i*50, canvas.height-70,40,40);
-    ctx.fillStyle='white'; ctx.fillText(i+1, 35+i*50, canvas.height-45);
-  }
-
-  // UI: gold
-  ctx.fillStyle='yellow';
-  ctx.fillText('Gold: '+player.gold, 20, canvas.height-90);
-
-  // inventory
-  if(inventoryOpen){
-    ctx.fillStyle='rgba(0,0,0,0.5)';
-    ctx.fillRect(50,50,200,300);
-    ctx.fillStyle='white';
-    ctx.fillText('Inventory',100,70);
-  }
-}
-
-// loop
-function loop(){ update(); draw(); requestAnimationFrame(loop);}
-loop();
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Pixel Survival Step 9</title>
-<style>
-  html, body { margin:0; padding:0; overflow:hidden; background:#87CEEB; }
-  canvas { display:block; background:#87CEEB; }
-</style>
-</head>
-<body>
-<canvas id="game"></canvas>
-<script>
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-// player
-let player = { x:500, y:500, size:32, speed:3, color:'red', weapon:'sword', hp:100, maxHp:100, mana:50, maxMana:50, gold:0 };
-
-// keys
-let keys = {};
-
-// map tiles
-const tileSize = 64;
-const mapWidth = 30;
-const mapHeight = 20;
-let map = [];
-for(let y=0;y<mapHeight;y++){
-  let row=[];
-  for(let x=0;x<mapWidth;x++) row.push(Math.random()<0.1?'water':'grass');
-  map.push(row);
-}
-
-// clouds
-let clouds = [];
-for(let i=0;i<5;i++) clouds.push({x:Math.random()*canvas.width, y:Math.random()*100, w:100, h:50, speed:0.2+Math.random()*0.3});
-
-// monsters
-let monsters = [];
-for(let i=0;i<10;i++){
-  monsters.push({
-    x:Math.random()*mapWidth*tileSize,
-    y:Math.random()*mapHeight*tileSize,
-    size:32, color:'green', hp:50,
-    vx:(Math.random()-0.5)*1, vy:(Math.random()-0.5)*1,
-    damage:5
-  });
-}
-
-// chests
-let chests = [];
-for(let i=0;i<10;i++) chests.push({x:Math.random()*mapWidth*tileSize, y:Math.random()*mapHeight*tileSize, size:32, opened:false});
-
-// pets
-let pets = [];
-for(let i=0;i<2;i++) pets.push({x:player.x+Math.random()*50, y:player.y+Math.random()*50, size:16, color:'orange', damage:5});
-
-// inventory & items
-let inventoryOpen = false;
-let items = [];
-
-// particle effects
-let effects = [];
-
-// key listener
-document.addEventListener('keydown', e=>{
-  keys[e.key.toLowerCase()] = true;
-  if(e.key.toLowerCase() === 'i') inventoryOpen = !inventoryOpen;
-
-  if(e.key.toLowerCase() === 'e'){
-    chests.forEach(ch=>{
-      let dx = player.x - ch.x;
-      let dy = player.y - ch.y;
-      if(Math.sqrt(dx*dx+dy*dy)<50 && !ch.opened){
-        ch.opened=true;
-        items.push({x:ch.x, y:ch.y, size:16, color:'gold', type:'coin'});
-      }
-    });
-  }
-
-  if(['1','2','3','4'].includes(e.key)){
-    for(let i=0;i<25;i++){
-      let angle = Math.random()*Math.PI*2;
-      let speed = Math.random()*4+1;
-      effects.push({
-        x:player.x, y:player.y,
-        vx:Math.cos(angle)*speed,
-        vy:Math.sin(angle)*speed,
-        radius:5,
-        color: e.key==='1'?'cyan': e.key==='2'?'magenta': e.key==='3'?'yellow':'lime',
-        life:50,
-        trail:[{x:player.x, y:player.y}]
-      });
-    }
-  }
-});
-document.addEventListener('keyup', e=> keys[e.key.toLowerCase()] = false);
-
-// update
-function update(){
-  if(keys['w']) player.y -= player.speed;
-  if(keys['s']) player.y += player.speed;
-  if(keys['a']) player.x -= player.speed;
-  if(keys['d']) player.x += player.speed;
-
-  clouds.forEach(c=>{c.x+=c.speed;if(c.x>canvas.width)c.x=-c.w;});
-
-  // pets follow player and attack monsters
-  pets.forEach(p=>{
-    let dx=player.x-p.x, dy=player.y-p.y;
-    if(Math.sqrt(dx*dx+dy*dy)>20){p.x+=dx*0.05; p.y+=dy*0.05;}
-    monsters.forEach((m,idx)=>{
-      let mdx = m.x - p.x, mdy = m.y - p.y;
-      if(Math.sqrt(mdx*mdx+mdy*mdy)<30){
-        m.hp -= p.damage;
-        if(m.hp<=0){
-          items.push({x:m.x,y:m.y,size:16,color:'gold',type:'coin'});
-          monsters.splice(idx,1);
-        }
-      }
-    });
-  });
-
-  // monsters move + AI attack
-  monsters.forEach(m=>{
-    let dx = player.x - m.x, dy = player.y - m.y;
-    let dist = Math.sqrt(dx*dx+dy*dy);
-    if(dist<150){
-      // chase player
-      m.vx = dx*0.02; m.vy = dy*0.02;
-      if(dist<30){
-        player.hp -= m.damage*0.1;
-      }
-    }else{
-      // wander
-      m.x += m.vx; m.y += m.vy;
-      if(m.x<0||m.x>mapWidth*tileSize)m.vx*=-1;
-      if(m.y<0||m.y>mapHeight*tileSize)m.vy*=-1;
-    }
-  });
-
-  effects.forEach(e=>{
-    e.x+=e.vx; e.y+=e.vy; e.radius*=0.95; e.life--;
-    e.trail.push({x:e.x,y:e.y}); if(e.trail.length>15) e.trail.shift();
-  });
-  effects = effects.filter(e=>e.life>0);
-
-  // player pick up items
-  items.forEach((it,idx)=>{
-    let dx=player.x-it.x, dy=player.y-it.y;
-    if(Math.sqrt(dx*dx+dy*dy)<30){ items.splice(idx,1); player.gold++; }
-  });
-}
-
-// draw
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // map tiles
-  for(let y=0;y<mapHeight;y++){
-    for(let x=0;x<mapWidth;x++){
-      ctx.fillStyle=map[y][x]==='grass'?'#7cfc00':'#1e90ff';
-      ctx.fillRect(x*tileSize,y*tileSize,tileSize,tileSize);
-    }
-  }
-
-  // clouds
-  clouds.forEach(c=>{ctx.fillStyle='white';ctx.beginPath();ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);ctx.fill();});
-
-  // monsters
-  monsters.forEach(m=>{ctx.fillStyle=m.color;ctx.fillRect(m.x-m.size/2,m.y-m.size/2,m.size,m.size);});
-
-  // chests
-  chests.forEach(ch=>{ctx.fillStyle=ch.opened?'yellow':'brown';ctx.fillRect(ch.x-ch.size/2,ch.y-ch.size/2,ch.size,ch.size);});
-
-  // pets
-  pets.forEach(p=>{ctx.fillStyle=p.color;ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);});
-
-  // items
-  items.forEach(it=>{ctx.fillStyle=it.color;ctx.fillRect(it.x-it.size/2,it.y-it.size/2,it.size,it.size);});
-
-  // player glow + weapon
-  ctx.save();
-  ctx.shadowColor='white'; ctx.shadowBlur=30;
-  ctx.fillStyle=player.color;
-  ctx.fillRect(player.x-player.size/2,player.y-player.size/2,player.size,player.size);
-  ctx.fillStyle='silver';
-  ctx.fillRect(player.x+player.size/2,player.y-5,20,10);
-  ctx.restore();
-
-  // skill particles
-  effects.forEach(e=>{
-    ctx.save();
-    ctx.globalAlpha=e.life/50;
-    ctx.strokeStyle=e.color;
-    ctx.lineWidth=2;
-    ctx.beginPath();
-    ctx.moveTo(e.trail[0].x,e.trail[0].y);
-    for(let i=1;i<e.trail.length;i++) ctx.lineTo(e.trail[i].x,e.trail[i].y);
-    ctx.stroke();
-    ctx.beginPath();
-    ctx.fillStyle=e.color;
-    ctx.shadowColor=e.color;
-    ctx.shadowBlur=15;
-    ctx.arc(e.x,e.y,e.radius,0,Math.PI*2);
-    ctx.fill();
-    ctx.restore();
-  });
-
-  // UI: health & mana bar
-  ctx.fillStyle='black'; ctx.fillRect(20,20,200,20);
-  ctx.fillStyle='red'; ctx.fillRect(20,20,200*(player.hp/player.maxHp),20);
-  ctx.strokeStyle='white'; ctx.strokeRect(20,20,200,20);
-
-  ctx.fillStyle='black'; ctx.fillRect(20,45,200,10);
-  ctx.fillStyle='blue'; ctx.fillRect(20,45,200*(player.mana/player.maxMana),10);
-  ctx.strokeStyle='white'; ctx.strokeRect(20,45,200,10);
-
-  // UI: skill bar
-  for(let i=0;i<4;i++){
-    ctx.fillStyle='gray'; ctx.fillRect(20+i*50, canvas.height-70,40,40);
-    ctx.fillStyle='white'; ctx.fillText(i+1, 35+i*50, canvas.height-45);
-  }
-
-  // UI: gold
-  ctx.fillStyle='yellow';
-  ctx.fillText('Gold: '+player.gold, 20, canvas.height-90);
-
-  // inventory
-  if(inventoryOpen){
-    ctx.fillStyle='rgba(0,0,0,0.5)';
-    ctx.fillRect(50,50,200,300);
-    ctx.fillStyle='white';
-    ctx.fillText('Inventory',100,70);
-  }
-}
-
-// loop
-function loop(){ update(); draw(); requestAnimationFrame(loop);}
-loop();
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Pixel Survival Step 10</title>
+<title>Mini Terraria Step 1</title>
 <style>
 html, body {margin:0; padding:0; overflow:hidden; background:#87CEEB;}
 canvas {display:block; background:#87CEEB;}
@@ -1726,332 +11,125 @@ canvas {display:block; background:#87CEEB;}
 <body>
 <canvas id="game"></canvas>
 <script>
-const canvas=document.getElementById('game');
-const ctx=canvas.getContext('2d');
-canvas.width=window.innerWidth;
-canvas.height=window.innerHeight;
-
-// player
-let player={x:500,y:500,size:32,speed:3,color:'red',weapon:'sword',hp:100,maxHp:100,mana:50,maxMana:50,gold:0};
-// keys
-let keys={};
-// map
-const tileSize=64,mapWidth=50,mapHeight=30;
-let map=[];
-for(let y=0;y<mapHeight;y++){
-  let row=[];
-  for(let x=0;x<mapWidth;x++) row.push(Math.random()<0.1?'water':'grass');
-  map.push(row);
-}
-
-// clouds
-let clouds=[];
-for(let i=0;i<10;i++) clouds.push({x:Math.random()*canvas.width,y:Math.random()*100,w:100,h:50,speed:0.2+Math.random()*0.5});
-
-// monsters
-let monsters=[];
-function spawnMonsters(n){
-  for(let i=0;i<n;i++){
-    monsters.push({x:Math.random()*mapWidth*tileSize,y:Math.random()*mapHeight*tileSize,size:32,color:'green',hp:50,vx:(Math.random()-0.5)*1,vy:(Math.random()-0.5)*1,damage:5});
-  }
-}
-spawnMonsters(20);
-
-// boss
-let boss={x:canvas.width/2,y:canvas.height/2,size:64,color:'purple',hp:500,maxHp:500,damage:20,active:false};
-
-// chests & items
-let chests=[],items=[];
-for(let i=0;i<15;i++) chests.push({x:Math.random()*mapWidth*tileSize,y:Math.random()*mapHeight*tileSize,size:32,opened:false});
-
-// pets
-let pets=[];
-for(let i=0;i<2;i++) pets.push({x:player.x+Math.random()*50,y:player.y+Math.random()*50,size:16,color:'orange',damage:5});
-
-// effects
-let effects=[];
-
-// key listener
-document.addEventListener('keydown',e=>{
-  keys[e.key.toLowerCase()]=true;
-  if(e.key.toLowerCase()==='i') inventoryOpen=!inventoryOpen;
-  if(e.key.toLowerCase()==='e'){
-    chests.forEach(ch=>{
-      let dx=player.x-ch.x,dy=player.y-ch.y;
-      if(Math.sqrt(dx*dx+dy*dy)<50&&!ch.opened){ch.opened=true; items.push({x:ch.x,y:ch.y,size:16,color:'gold',type:'coin'});}
-    });
-  }
-  if(['1','2','3','4'].includes(e.key)){
-    for(let i=0;i<30;i++){
-      let angle=Math.random()*Math.PI*2,speed=Math.random()*5+1;
-      effects.push({x:player.x,y:player.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,radius:5,color:e.key==='1'?'cyan':e.key==='2'?'magenta':e.key==='3'?'yellow':'lime',life:60,trail:[{x:player.x,y:player.y}]});
-    }
-  }
-});
-document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
-
-// inventory
-let inventoryOpen=false;
-
-// update
-function update(){
-  if(keys['w']) player.y-=player.speed;
-  if(keys['s']) player.y+=player.speed;
-  if(keys['a']) player.x-=player.speed;
-  if(keys['d']) player.x+=player.speed;
-
-  clouds.forEach(c=>{c.x+=c.speed;if(c.x>canvas.width)c.x=-c.w;});
-  // pets follow + attack monsters
-  pets.forEach(p=>{
-    let dx=player.x-p.x,dy=player.y-p.y;
-    if(Math.sqrt(dx*dx+dy*dy)>20){p.x+=dx*0.05; p.y+=dy*0.05;}
-    monsters.forEach((m,idx)=>{
-      let mdx=m.x-p.x,mdy=m.y-p.y;
-      if(Math.sqrt(mdx*mdx+mdy*mdy)<30){ m.hp-=p.damage; if(m.hp<=0){items.push({x:m.x,y:m.y,size:16,color:'gold',type:'coin'}); monsters.splice(idx,1);} }
-    });
-  });
-
-  // monsters AI + attack
-  monsters.forEach(m=>{
-    let dx=player.x-m.x,dy=player.y-m.y,dist=Math.sqrt(dx*dx+dy*dy);
-    if(dist<150){ m.vx=dx*0.02;m.vy=dy*0.02; if(dist<30) player.hp-=m.damage*0.05;} 
-    else{ m.x+=m.vx;m.y+=m.vy; if(m.x<0||m.x>mapWidth*tileSize)m.vx*=-1;if(m.y<0||m.y>mapHeight*tileSize)m.vy*=-1;}
-  });
-
-  // boss AI
-  if(!boss.active && player.x>canvas.width/2-200 && player.x<canvas.width/2+200 && player.y>canvas.height/2-200 && player.y<canvas.height/2+200) boss.active=true;
-  if(boss.active){
-    let dx=player.x-boss.x,dy=player.y-boss.y;
-    let dist=Math.sqrt(dx*dx+dy*dy);
-    boss.x+=dx*0.01; boss.y+=dy*0.01;
-    if(dist<60) player.hp-=boss.damage*0.05;
-  }
-
-  effects.forEach(e=>{e.x+=e.vx;e.y+=e.vy;e.radius*=0.95;e.life--; e.trail.push({x:e.x,y:e.y}); if(e.trail.length>15)e.trail.shift();});
-  effects=effects.filter(e=>e.life>0);
-
-  // pick items
-  items.forEach((it,idx)=>{let dx=player.x-it.x,dy=player.y-it.y;if(Math.sqrt(dx*dx+dy*dy)<30){items.splice(idx,1);player.gold++;}});
-}
-
-// draw
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-
-  // map
-  for(let y=0;y<mapHeight;y++){for(let x=0;x<mapWidth;x++){ctx.fillStyle=map[y][x]==='grass'?'#7cfc00':'#1e90ff';ctx.fillRect(x*tileSize,y*tileSize,tileSize,tileSize);}}
-
-  // clouds
-  clouds.forEach(c=>{ctx.fillStyle='white';ctx.beginPath();ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);ctx.fill();});
-
-  // monsters
-  monsters.forEach(m=>{ctx.fillStyle=m.color;ctx.fillRect(m.x-m.size/2,m.y-m.size/2,m.size,m.size);});
-
-  // boss
-  if(boss.active){ctx.fillStyle=boss.color;ctx.fillRect(boss.x-boss.size/2,boss.y-boss.size/2,boss.size,boss.size);}
-
-  // chests
-  chests.forEach(ch=>{ctx.fillStyle=ch.opened?'yellow':'brown';ctx.fillRect(ch.x-ch.size/2,ch.y-ch.size/2,ch.size,ch.size);});
-
-  // pets
-  pets.forEach(p=>{ctx.fillStyle=p.color;ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);});
-
-  // items
-  items.forEach(it=>{ctx.fillStyle=it.color;ctx.fillRect(it.x-it.size/2,it.y-it.size/2,it.size,it.size);});
-
-  // player
-  ctx.save(); ctx.shadowColor='white'; ctx.shadowBlur=30; ctx.fillStyle=player.color; ctx.fillRect(player.x-player.size/2,player.y-player.size/2,player.size,player.size);ctx.fillStyle='silver';ctx.fillRect(player.x+player.size/2,player.y-5,20,10);ctx.restore();
-
-  // skill particles
-  effects.forEach(e=>{ctx.save(); ctx.globalAlpha=e.life/60; ctx.strokeStyle=e.color; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(e.trail[0].x,e.trail[0].y); for(let i=1;i<e.trail.length;i++) ctx.lineTo(e.trail[i].x,e.trail[i].y); ctx.stroke(); ctx.beginPath(); ctx.fillStyle=e.color; ctx.shadowColor=e.color; ctx.shadowBlur=20; ctx.arc(e.x,e.y,e.radius,0,Math.PI*2); ctx.fill(); ctx.restore(); });
-
-  // UI
-  ctx.fillStyle='black'; ctx.fillRect(20,20,200,20); ctx.fillStyle='red'; ctx.fillRect(20,20,200*(player.hp/player.maxHp),20); ctx.strokeStyle='white'; ctx.strokeRect(20,20,200,20);
-  ctx.fillStyle='black'; ctx.fillRect(20,45,200,10); ctx.fillStyle='blue'; ctx.fillRect(20,45,200*(player.mana/player.maxMana),10); ctx.strokeStyle='white'; ctx.strokeRect(20,45,200,10);
-
-  for(let i=0;i<4;i++){ctx.fillStyle='gray'; ctx.fillRect(20+i*50, canvas.height-70,40,40); ctx.fillStyle='white'; ctx.fillText(i+1,35+i*50,canvas.height-45);}
-  ctx.fillStyle='yellow'; ctx.fillText('Gold: '+player.gold,20,canvas.height-90);
-
-  if(inventoryOpen){ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(50,50,200,300); ctx.fillStyle='white'; ctx
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Pixel Survival Step 11</title>
-<style>
-html, body { margin:0; padding:0; overflow:hidden; background:#87CEEB; }
-canvas { display:block; background:#87CEEB; }
-</style>
-</head>
-<body>
-<canvas id="game"></canvas>
-<script>
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// player
-let player = {x:500,y:500,size:32,speed:3,color:'red',weapon:'sword',hp:100,maxHp:100,mana:50,maxMana:50,gold:0,exp:0,level:1};
-
-// keys
-let keys = {};
-
 // map
-const tileSize = 64, mapWidth = 70, mapHeight = 50;
+const tileSize = 32, mapWidth = 100, mapHeight = 30;
 let map = [];
 for(let y=0;y<mapHeight;y++){
-  let row = [];
+  let row=[];
   for(let x=0;x<mapWidth;x++){
-    let r = Math.random();
-    if(r<0.05) row.push('water');
-    else if(r<0.15) row.push('sand');
-    else if(r<0.3) row.push('mountain');
-    else row.push('grass');
+    if(y>20) row.push('dirt');
+    else if(y===20) row.push('grass');
+    else row.push('air');
   }
   map.push(row);
 }
 
-// clouds
-let clouds = [];
-for(let i=0;i<15;i++) clouds.push({x:Math.random()*canvas.width,y:Math.random()*150,w:100,h:50,speed:0.2+Math.random()*0.5});
+// sảnh bắt đầu
+let startHouse = {x:10,y:17,width:5,height:4};
 
-// monsters
-let monsters = [];
-function spawnMonsters(n){
-  for(let i=0;i<n;i++){
-    let color = Math.random()<0.1?'red':'green';
-    let size = color==='red'?48:32;
-    monsters.push({x:Math.random()*mapWidth*tileSize,y:Math.random()*mapHeight*tileSize,size:size,color:color,hp:size*2,vx:(Math.random()-0.5)*1,vy:(Math.random()-0.5)*1,damage:size/8});
-  }
-}
-spawnMonsters(50);
+// player humanoid pixel
+let player = {
+  x:startHouse.x*tileSize + tileSize*2,
+  y:(startHouse.y-1)*tileSize,
+  width:16,height:32,
+  color:'#FF0000',
+  vx:0,vy:0,speed:3,jump:8,onGround:false
+};
 
-// bosses
-let bosses = [];
-function spawnBoss(){
-  let types = ['purple','darkred','gold'];
-  let type = types[Math.floor(Math.random()*types.length)];
-  bosses.push({x:Math.random()*mapWidth*tileSize,y:Math.random()*mapHeight*tileSize,size:64,color:type,hp:500,damage:20,active:true});
-}
+// keys
+let keys={};
 
-// chests & items
-let chests=[], items=[];
-for(let i=0;i<25;i++) chests.push({x:Math.random()*mapWidth*tileSize,y:Math.random()*mapHeight*tileSize,size:32,opened:false});
+// gravity
+const gravity = 0.5;
 
-// pets
-let pets=[];
-for(let i=0;i<3;i++) pets.push({x:player.x+Math.random()*50,y:player.y+Math.random()*50,size:16,color:'orange',damage:5,level:1});
-
-// effects
-let effects=[];
-
-// inventory
-let inventoryOpen=false;
+// camera
+let camX = 0, camY = 0;
 
 // key listener
-document.addEventListener('keydown',e=>{
-  keys[e.key.toLowerCase()]=true;
-  if(e.key.toLowerCase()==='i') inventoryOpen=!inventoryOpen;
-  if(e.key.toLowerCase()==='e'){
-    chests.forEach(ch=>{
-      let dx=player.x-ch.x,dy=player.y-ch.y;
-      if(Math.sqrt(dx*dx+dy*dy)<50&&!ch.opened){ch.opened=true; 
-        let r = Math.random();
-        if(r<0.5) items.push({x:ch.x,y:ch.y,size:16,color:'gold',type:'coin'});
-        else items.push({x:ch.x,y:ch.y,size:16,color:'cyan',type:'potion'});
-      }
-    });
-  }
-  if(['1','2','3','4'].includes(e.key)){
-    for(let i=0;i<40;i++){
-      let angle=Math.random()*Math.PI*2,speed=Math.random()*5+1;
-      let color=e.key==='1'?'cyan':e.key==='2'?'magenta':e.key==='3'?'yellow':'lime';
-      effects.push({x:player.x,y:player.y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,radius:5,color:color,life:60,trail:[{x:player.x,y:player.y}]});
-    }
-  }
-});
+document.addEventListener('keydown',e=>keys[e.key.toLowerCase()]=true);
 document.addEventListener('keyup',e=>keys[e.key.toLowerCase()]=false);
 
 // update
 function update(){
-  if(keys['w']) player.y-=player.speed;
-  if(keys['s']) player.y+=player.speed;
-  if(keys['a']) player.x-=player.speed;
-  if(keys['d']) player.x+=player.speed;
+  // player movement
+  if(keys['a']) player.vx=-player.speed;
+  else if(keys['d']) player.vx=player.speed;
+  else player.vx=0;
 
-  clouds.forEach(c=>{c.x+=c.speed;if(c.x>canvas.width)c.x=-c.w;});
+  // jump
+  if(keys['w'] && player.onGround){ player.vy=-player.jump; player.onGround=false; }
 
-  // pets follow + attack monsters
-  pets.forEach(p=>{
-    let dx=player.x-p.x,dy=player.y-p.y;
-    if(Math.sqrt(dx*dx+dy*dy)>20){p.x+=dx*0.05;p.y+=dy*0.05;}
-    monsters.forEach((m,idx)=>{
-      let mdx=m.x-p.x,mdy=m.y-p.y;
-      if(Math.sqrt(mdx*mdx+mdy*mdy)<30){ m.hp-=p.damage; if(m.hp<=0){items.push({x:m.x,y:m.y,size:16,color:'gold',type:'coin'}); monsters.splice(idx,1);} }
-    });
-  });
+  player.vy += gravity;
+  player.x += player.vx;
+  player.y += player.vy;
 
-  // monsters AI
-  monsters.forEach(m=>{
-    let dx=player.x-m.x,dy=player.y-m.y,dist=Math.sqrt(dx*dx+dy*dy);
-    if(dist<150){ m.vx=dx*0.02;m.vy=dy*0.02; if(dist<30) player.hp-=m.damage*0.05;} 
-    else{ m.x+=m.vx;m.y+=m.vy; if(m.x<0||m.x>mapWidth*tileSize)m.vx*=-1;if(m.y<0||m.y>mapHeight*tileSize)m.vy*=-1;}
-  });
+  // collision with map tiles
+  player.onGround=false;
+  let px = Math.floor(player.x/tileSize);
+  let py = Math.floor(player.y/tileSize);
+  for(let y=Math.max(0,py-1);y<Math.min(mapHeight,py+3);y++){
+    for(let x=Math.max(0,px-1);x<Math.min(mapWidth,px+2);x++){
+      if(map[y][x]!=='air'){
+        let tileX = x*tileSize, tileY = y*tileSize;
+        // simple collision
+        if(player.x+player.width>tileX && player.x<tileX+tileSize && player.y+player.height>tileY && player.y<tileY+tileSize){
+          // from top
+          if(player.vy>0 && player.y+player.height-tileY<player.vy+1){ player.y=tileY-player.height; player.vy=0; player.onGround=true; }
+          // from bottom
+          else if(player.vy<0 && tileY+tileSize-player.y<Math.abs(player.vy)+1){ player.y=tileY+tileSize; player.vy=0; }
+          // from sides
+          else{ if(player.vx>0) player.x=tileX-player.width; else if(player.vx<0) player.x=tileX+tileSize; player.vx=0; }
+        }
+      }
+    }
+  }
 
-  // bosses AI
-  bosses.forEach((b,idx)=>{
-    let dx=player.x-b.x,dy=player.y-b.y,dist=Math.sqrt(dx*dx+dy*dy);
-    if(dist<200){ b.x+=dx*0.01; b.y+=dy*0.01; if(dist<60) player.hp-=b.damage*0.05; }
-    if(b.hp<=0){items.push({x:b.x,y:b.y,size:20,color:'gold',type:'rare'}); bosses.splice(idx,1);}
-  });
-
-  // effects update
-  effects.forEach(e=>{e.x+=e.vx;e.y+=e.vy;e.radius*=0.95;e.life--; e.trail.push({x:e.x,y:e.y}); if(e.trail.length>20) e.trail.shift();});
-  effects=effects.filter(e=>e.life>0);
-
-  // pick items
-  items.forEach((it,idx)=>{let dx=player.x-it.x,dy=player.y-it.y;if(Math.sqrt(dx*dx+dy*dy)<30){items.splice(idx,1);player.gold++;}});
+  // camera follow
+  camX = player.x - canvas.width/2 + player.width/2;
+  camY = player.y - canvas.height/2 + player.height/2;
 }
 
 // draw
 function draw(){
   ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.save();
+  ctx.translate(-camX,-camY);
 
-  // map tiles
-  for(let y=0;y<mapHeight;y++){for(let x=0;x<mapWidth;x++){let col='';switch(map[y][x]){case 'grass':col='#7cfc00';break;case 'water':col='#1e90ff';break;case 'sand':col='#f4d27a';break;case 'mountain':col='#8b8b8b';break;}ctx.fillStyle=col;ctx.fillRect(x*tileSize,y*tileSize,tileSize,tileSize);}}
+  // draw map
+  for(let y=0;y<mapHeight;y++){
+    for(let x=0;x<mapWidth;x++){
+      if(map[y][x]==='dirt'){ctx.fillStyle='#8B4513'; ctx.fillRect(x*tileSize,y*tileSize,tileSize,tileSize);}
+      else if(map[y][x]==='grass'){ctx.fillStyle='#00FF00'; ctx.fillRect(x*tileSize,y*tileSize,tileSize,tileSize);}
+    }
+  }
 
-  // clouds
-  clouds.forEach(c=>{ctx.fillStyle='white';ctx.beginPath();ctx.ellipse(c.x,c.y,c.w,c.h,0,0,Math.PI*2);ctx.fill();});
+  // draw start house
+  ctx.fillStyle='#654321';
+  for(let y=0;y<startHouse.height;y++){
+    for(let x=0;x<startHouse.width;x++){
+      ctx.fillRect((startHouse.x+x)*tileSize,(startHouse.y-y)*tileSize,tileSize,tileSize);
+    }
+  }
 
-  // monsters
-  monsters.forEach(m=>{ctx.fillStyle=m.color;ctx.fillRect(m.x-m.size/2,m.y-m.size/2,m.size,m.size);});
+  // draw player pixel humanoid
+  ctx.fillStyle=player.color;
+  // head
+  ctx.fillRect(player.x,player.y,player.width,player.width);
+  // body
+  ctx.fillRect(player.x,player.y+player.width,player.width,player.height-player.width*1.5);
+  // legs
+  ctx.fillRect(player.x,player.y+player.height-8,player.width/2,8);
+  ctx.fillRect(player.x+player.width/2,player.y+player.height-8,player.width/2,8);
+  // arms
+  ctx.fillRect(player.x-4,player.y+8,4,player.height/2);
+  ctx.fillRect(player.x+player.width,player.y+8,4,player.height/2);
 
-  // bosses
-  bosses.forEach(b=>{ctx.fillStyle=b.color;ctx.fillRect(b.x-b.size/2,b.y-b.size/2,b.size,b.size);});
-
-  // chests
-  chests.forEach(ch=>{ctx.fillStyle=ch.opened?'yellow':'brown';ctx.fillRect(ch.x-ch.size/2,ch.y-ch.size/2,ch.size,ch.size);});
-
-  // pets
-  pets.forEach(p=>{ctx.fillStyle=p.color;ctx.fillRect(p.x-p.size/2,p.y-p.size/2,p.size,p.size);});
-
-  // items
-  items.forEach(it=>{ctx.fillStyle=it.color;ctx.fillRect(it.x-it.size/2,it.y-it.size/2,it.size,it.size);});
-
-  // player
-  ctx.save(); ctx.shadowColor='white'; ctx.shadowBlur=30; ctx.fillStyle=player.color; ctx.fillRect(player.x-player.size/2,player.y-player.size/2,player.size,player.size); ctx.fillStyle='silver'; ctx.fillRect(player.x+player.size/2,player.y-5,20,10); ctx.restore();
-
-  // skill particles
-  effects.forEach(e=>{ctx.save(); ctx.globalAlpha=e.life/60; ctx.strokeStyle=e.color; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(e.trail[0].x,e.trail[0].y); for(let i=1;i<e.trail.length;i++) ctx.lineTo(e.trail[i].x,e.trail[i].y); ctx.stroke(); ctx.beginPath(); ctx.fillStyle=e.color; ctx.shadowColor=e.color; ctx.shadowBlur=20; ctx.arc(e.x,e.y,e.radius,0,Math.PI*2); ctx.fill(); ctx.restore(); });
-
-  // UI
-  ctx.fillStyle='black'; ctx.fillRect(20,20,200,20); ctx.fillStyle='red'; ctx.fillRect(20,20,200*(player.hp/player.maxHp),20); ctx.strokeStyle='white'; ctx.strokeRect(20,20,200,20);
-  ctx.fillStyle='black'; ctx.fillRect(20,45,200,10); ctx.fillStyle='blue'; ctx.fillRect(20,45,200*(player.mana/player.maxMana),10); ctx.strokeStyle='white'; ctx.strokeRect(20,45,200,10);
-  for(let i=0;i<4;i++){ctx.fillStyle='gray'; ctx.fillRect(20+i*50, canvas.height-70,40,40); ctx.fillStyle='white'; ctx.fillText(i+1,35+i*50,canvas.height-45);}
-  ctx.fillStyle='yellow'; ctx.fillText('Gold: '+player.gold,20,canvas.height-90);
-
-  if(inventoryOpen){ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(50,50,200,300); ctx.fillStyle='white'; ctx.fillText('Inventory',100,70);}
+  ctx.restore();
 }
 
 // loop
@@ -2060,3 +138,340 @@ loop();
 </script>
 </body>
 </html>
+<!-- copy đè index.html trước đó -->
+<script>
+// trees
+let trees = [];
+function generateTrees(){
+  for(let i=0;i<10;i++){
+    let x = 5 + Math.floor(Math.random()*50);
+    let height = 3 + Math.floor(Math.random()*3);
+    trees.push({x:x, y:19, height:height});
+  }
+}
+generateTrees();
+
+// chest
+let chests = [{x:12, y:17, opened:false, items:['coin','potion']}];
+
+// items on ground
+let groundItems = [];
+
+// skill effects
+let skillEffects = [];
+
+// key listener update
+document.addEventListener('keydown', e=>{
+  keys[e.key.toLowerCase()]=true;
+  if(e.key.toLowerCase()==='e'){
+    // open chest
+    chests.forEach(c=>{
+      if(!c.opened && Math.abs(player.x-c.x*tileSize)<32 && Math.abs(player.y-c.y*tileSize)<32){
+        c.opened=true;
+        c.items.forEach(it=>groundItems.push({x:c.x*tileSize+tileSize/2,y:c.y*tileSize,it:it,color:it==='coin'?'yellow':'cyan'}));
+      }
+    });
+    // chop tree
+    trees.forEach((t,idx)=>{
+      if(Math.abs(player.x-t.x*tileSize)<32 && Math.abs(player.y-(t.y-t.height+1)*tileSize)<32){
+        skillEffects.push({x:t.x*tileSize+tileSize/2, y:(t.y-t.height+1)*tileSize, life:20, color:'brown'});
+        trees.splice(idx,1); // remove tree
+      }
+    });
+  }
+  // skill basic: melee swing
+  if(e.key==='1'){
+    skillEffects.push({x:player.x+player.width/2, y:player.y+player.height/2, life:20, color:'red'});
+  }
+});
+
+document.addEventListener('keyup', e=>keys[e.key.toLowerCase()]=false);
+
+// update skill & items
+function updateStep2(){
+  skillEffects.forEach((s,i)=>{s.life--; if(s.life<=0) skillEffects.splice(i,1);});
+  // pick up items
+  groundItems.forEach((it,idx)=>{
+    if(Math.abs(player.x-it.x)<16 && Math.abs(player.y-it.y)<16){
+      groundItems.splice(idx,1);
+      console.log('Picked:', it.it);
+    }
+  });
+}
+
+// draw step 2
+function drawStep2(){
+  ctx.save();
+  ctx.translate(-camX,-camY);
+
+  // draw trees
+  trees.forEach(t=>{
+    ctx.fillStyle='brown';
+    for(let h=0;h<t.height;h++) ctx.fillRect(t.x*tileSize,(t.y-h)*tileSize,tileSize,tileSize);
+    ctx.fillStyle='green';
+    ctx.fillRect(t.x*tileSize,(t.y-t.height)*tileSize,tileSize,tileSize);
+  });
+
+  // draw chests
+  chests.forEach(c=>{
+    ctx.fillStyle=c.opened?'yellow':'orange';
+    ctx.fillRect(c.x*tileSize,c.y*tileSize,tileSize,tileSize);
+  });
+
+  // draw items on ground
+  groundItems.forEach(it=>{
+    ctx.fillStyle=it.color;
+    ctx.fillRect(it.x-8,it.y-8,16,16);
+  });
+
+  // draw skill effects
+  skillEffects.forEach(s=>{
+    ctx.fillStyle=s.color;
+    ctx.globalAlpha = s.life/20;
+    ctx.fillRect(s.x-8,s.y-8,16,16);
+    ctx.globalAlpha=1;
+  });
+
+  ctx.restore();
+}
+
+// integrate into loop
+function loopStep2(){
+  update(); // step1 physics
+  updateStep2(); // step2 items/skill
+  draw();
+  drawStep2();
+  requestAnimationFrame(loopStep2);
+}
+loopStep2();
+</script>
+<script>
+// monsters
+let monsters = [];
+function spawnMonsters(n){
+  for(let i=0;i<n;i++){
+    monsters.push({x:Math.random()*mapWidth*tileSize,y:18*tileSize+Math.random()*50,width:24,height:24,color:'green',vx:(Math.random()-0.5)*1,vy:0,hp:20});
+  }
+}
+spawnMonsters(10);
+
+// boss mini
+let bosses = [{x:30*tileSize, y:18*tileSize,width:48,height:48,color:'purple',hp:100}];
+
+// pets
+let pets = [{x:player.x-20, y:player.y, width:16,height:16,color:'orange',damage:5}];
+
+// update monsters/boss/pets
+function updateStep3(){
+  monsters.forEach((m,idx)=>{
+    // simple AI: move toward player
+    let dx = player.x - m.x;
+    m.vx = dx*0.01;
+    m.x += m.vx;
+    // collision with player
+    if(Math.abs(player.x-m.x)<20 && Math.abs(player.y-m.y)<20) player.hp -= 0.1;
+    if(m.hp<=0) monsters.splice(idx,1);
+  });
+
+  bosses.forEach((b,idx)=>{
+    let dx = player.x - b.x;
+    b.x += dx*0.02;
+    if(Math.abs(player.x-b.x)<30 && Math.abs(player.y-b.y)<30) player.hp -= 0.5;
+    if(b.hp<=0) bosses.splice(idx,1);
+  });
+
+  // pets follow player
+  pets.forEach(p=>{
+    let dx = player.x - p.x;
+    p.x += dx*0.05;
+    // attack nearest monster
+    let target = monsters[0];
+    if(target){
+      let tdx = target.x - p.x;
+      p.x += tdx*0.05;
+      if(Math.abs(target.x-p.x)<10){target.hp -= p.damage; skillEffects.push({x:target.x, y:target.y, life:15, color:'orange'});}
+    }
+  });
+}
+
+// draw monsters/boss/pets
+function drawStep3(){
+  ctx.save();
+  ctx.translate(-camX,-camY);
+  monsters.forEach(m=>{ctx.fillStyle=m.color; ctx.fillRect(m.x,m.y,m.width,m.height);});
+  bosses.forEach(b=>{ctx.fillStyle=b.color; ctx.fillRect(b.x,b.y,b.width,b.height);});
+  pets.forEach(p=>{ctx.fillStyle=p.color; ctx.fillRect(p.x,p.y,p.width,p.height);});
+  ctx.restore();
+}
+
+// integrate into loop
+function loopStep3(){
+  update(); // step1 physics
+  updateStep2(); // step2 items/skill
+  updateStep3(); // step3 monsters/boss/pets
+  draw();
+  drawStep2();
+  drawStep3();
+  requestAnimationFrame(loopStep3);
+}
+loopStep3();
+</script>
+<script>
+// map mở rộng
+for(let y=21;y<mapHeight;y++){
+  for(let x=0;x<mapWidth;x++){
+    if(map[y][x]==='air'){
+      let r=Math.random();
+      if(r<0.02) map[y][x]='ore';
+      else if(r<0.05) map[y][x]='rock';
+    }
+  }
+}
+
+// day/night
+let time=0;
+function updateDayNight(){
+  time+=0.01;
+}
+
+// skill: magic fireball + arrow
+document.addEventListener('keydown',e=>{
+  if(e.key==='2'){ // fireball
+    skillEffects.push({x:player.x,y:player.y,vx:5,vy:0,life:40,color:'orange',type:'fireball',trail:[]});
+  }
+  if(e.key==='3'){ // arrow
+    skillEffects.push({x:player.x,y:player.y,vx:7,vy:0,life:30,color:'gray',type:'arrow',trail:[]});
+  }
+});
+
+// update skill projectiles
+function updateSkillEffects(){
+  skillEffects.forEach((s,i)=>{
+    s.x += s.vx || 0;
+    s.y += s.vy || 0;
+    s.life--;
+    if(s.trail) s.trail.push({x:s.x,y:s.y});
+    if(s.trail && s.trail.length>10) s.trail.shift();
+    // collision with monsters/boss
+    monsters.forEach((m,mi)=>{
+      if(Math.abs(m.x-s.x)<20 && Math.abs(m.y-s.y)<20){ m.hp-=5; skillEffects.push({x:m.x,y:m.y,life:10,color:'red'});}
+    });
+    bosses.forEach((b,bi)=>{
+      if(Math.abs(b.x-s.x)<25 && Math.abs(b.y-s.y)<25){ b.hp-=5; skillEffects.push({x:b.x,y:b.y,life:10,color:'red'});}
+    });
+    if(s.life<=0) skillEffects.splice(i,1);
+  });
+}
+
+// draw skill effects with trail
+function drawSkillEffects(){
+  ctx.save();
+  ctx.translate(-camX,-camY);
+  skillEffects.forEach(s=>{
+    if(s.trail){
+      ctx.strokeStyle=s.color;
+      ctx.lineWidth=2;
+      ctx.beginPath();
+      ctx.moveTo(s.trail[0].x,s.trail[0].y);
+      for(let i=1;i<s.trail.length;i++) ctx.lineTo(s.trail[i].x,s.trail[i].y);
+      ctx.stroke();
+    }
+    ctx.fillStyle=s.color;
+    ctx.globalAlpha = 0.8;
+    ctx.fillRect(s.x-4,s.y-4,8,8);
+    ctx.globalAlpha=1;
+  });
+  ctx.restore();
+}
+
+// integrate into loop
+function loopStep45(){
+  update(); // physics
+  updateStep2(); // items/chest
+  updateStep3(); // monsters/boss/pets
+  updateDayNight();
+  updateSkillEffects();
+  draw();
+  drawStep2();
+  drawStep3();
+  drawSkillEffects();
+  // overlay day/night
+  ctx.fillStyle='rgba(0,0,50,'+Math.sin(time)*0.3+')';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  requestAnimationFrame(loopStep45);
+}
+loopStep45();
+</script>
+<script>
+// biome map generation
+function generateBiomes(){
+  for(let y=21;y<mapHeight;y++){
+    for(let x=0;x<mapWidth;x++){
+      let r=Math.random();
+      if(r<0.02) map[y][x]='ore';
+      else if(r<0.05) map[y][x]='rock';
+      else if(y>22 && Math.random()<0.01) map[y][x]='lava';
+    }
+  }
+}
+generateBiomes();
+
+// multiple bosses
+bosses.push({x:80*tileSize,y:18*tileSize,width:64,height:64,color:'darkred',hp:300,skillTimer:0});
+
+// advanced skill effects
+document.addEventListener('keydown',e=>{
+  if(e.key==='4'){ // lightning skill
+    for(let i=0;i<5;i++){
+      skillEffects.push({x:player.x,y:player.y,vx:0,vy:5+i,life:30,color:'cyan',type:'lightning',trail:[]});
+    }
+  }
+});
+
+// update advanced skill effects
+function updateSkillEffectsAdvanced(){
+  skillEffects.forEach((s,i)=>{
+    s.x += s.vx || 0; s.y += s.vy || 0;
+    s.life--;
+    if(s.trail) s.trail.push({x:s.x,y:s.y}); if(s.trail && s.trail.length>12) s.trail.shift();
+    monsters.forEach((m,mi)=>{ if(Math.abs(m.x-s.x)<20 && Math.abs(m.y-s.y)<20){ m.hp-=10; skillEffects.push({x:m.x,y:m.y,life:12,color:s.color});}});
+    bosses.forEach((b,bi)=>{ if(Math.abs(b.x-s.x)<30 && Math.abs(b.y-s.y)<30){ b.hp-=10; skillEffects.push({x:b.x,y:b.y,life:12,color:s.color});}});
+    if(s.life<=0) skillEffects.splice(i,1);
+  });
+}
+
+// advanced pet AI
+pets.forEach(p=>{
+  let nearest = monsters[0] || bosses[0];
+  if(nearest){
+    let dx=nearest.x-p.x;
+    p.x += dx*0.05;
+    if(Math.abs(dx)<10){ nearest.hp -= p.damage; skillEffects.push({x:nearest.x,y:nearest.y,life:10,color:'orange'});}
+  }
+});
+
+// crafting system (basic)
+let craftingTable = {
+  'wood_sword':['wood','wood'],
+  'magic_staff':['wood','potion']
+};
+function craft(item,inventory){
+  if(craftingTable[item]){
+    let can=true;
+    craftingTable[item].forEach(i=>{if(!inventory.includes(i)) can=false;});
+    if(can){ craftingTable[item].forEach(i=>{ let idx=inventory.indexOf(i); if(idx>-1) inventory.splice(idx,1);}); inventory.push(item); console.log('Crafted:',item); }
+  }
+}
+
+// draw overlay lighting/day/night
+ctx.fillStyle='rgba(0,0,50,'+Math.sin(time)*0.3+')';
+ctx.fillRect(0,0,canvas.width,canvas.height);
+
+// loop final integration
+function loopFinal(){
+  update(); updateStep2(); updateStep3(); updateDayNight(); updateSkillEffects(); updateSkillEffectsAdvanced();
+  draw(); drawStep2(); drawStep3(); drawSkillEffects();
+  requestAnimationFrame(loopFinal);
+}
+loopFinal();
+</script>
