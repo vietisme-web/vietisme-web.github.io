@@ -22,6 +22,9 @@ const shapes = [
 ];
 
 let blocks = [];
+let combo = 0;
+let score = 0;
+
 function generateBlocks(){
     blocks=[];
     const startY = gridSize*cellSize + 20;
@@ -62,7 +65,7 @@ function startDrag(pos){
     for(let b of blocks){
         const w = b.shape[0].length*cellSize;
         const h = b.shape.length*cellSize;
-        if(pos.x>b.x && pos.x<b.x+w && pos.y>b.y && pos.y<b.h && !b.placed){
+        if(pos.x>b.x && pos.x<b.x+w && pos.y>b.y && pos.y<b.y+h && !b.placed){
             selectedBlock=b;
             offsetX=pos.x-b.x;
             offsetY=pos.y-b.y;
@@ -78,9 +81,12 @@ function dropBlock(){
     if(canPlace(gx,gy,selectedBlock.shape)){
         placeBlock(gx,gy,selectedBlock.shape,selectedBlock.color);
         selectedBlock.placed=true;
-        checkFull();
+        let exploded = checkFull(); // trả về true nếu có row/col nổ
+        if(exploded) combo++;
+        else combo = 0; // nếu hết 3 khối mà không nổ thì combo reset
+        score += exploded ? 50*combo : 0;
         if(blocks.every(b=>b.placed)) generateBlocks();
-        else if(checkGameOver()) alert('Game Over =))');
+        if(checkGameOver()) alert('Game Over =))');
     } else {
         selectedBlock.x = selectedBlock.initX;
         selectedBlock.y = selectedBlock.initY;
@@ -104,13 +110,17 @@ function placeBlock(gx,gy,shape,color){
             if(shape[i][j]) grid[gy+i][gx+j]={color};
 }
 
+// trả về true nếu có row/col nổ
 function checkFull(){
+    let exploded=false;
     // rows
     for(let y=0;y<gridSize;y++){
         if(grid[y].every(c=>c)){
+            exploded=true;
             const color=grid[y][0].color;
             for(let x=0;x<gridSize;x++){
                 grid[y][x]=null;
+                animateClear(x,y,color);
             }
         }
     }
@@ -119,12 +129,31 @@ function checkFull(){
         let full=true;
         for(let y=0;y<gridSize;y++) if(!grid[y][x]) full=false;
         if(full){
+            exploded=true;
             const color=grid[0][x].color;
             for(let y=0;y<gridSize;y++){
                 grid[y][x]=null;
+                animateClear(x,y,color);
             }
         }
     }
+    return exploded;
+}
+
+function animateClear(x,y,color){
+    let alpha=1;
+    function fade(){
+        alpha-=0.1;
+        if(alpha<=0) return;
+        ctx.fillStyle=color;
+        ctx.globalAlpha=alpha;
+        ctx.fillRect(x*cellSize,y*cellSize,cellSize,cellSize);
+        ctx.globalAlpha=1;
+        ctx.strokeStyle='#fff';
+        ctx.strokeRect(x*cellSize,y*cellSize,cellSize,cellSize);
+        requestAnimationFrame(fade);
+    }
+    fade();
 }
 
 function checkGameOver(){
@@ -164,6 +193,12 @@ function draw(){
             }
         }
     }
+
+    // hiển thị combo/score trên canvas
+    ctx.fillStyle='white';
+    ctx.font='18px Arial';
+    ctx.fillText('Score: '+score, 10, 20);
+    ctx.fillText('Combo: '+combo, 10, 40);
 
     requestAnimationFrame(draw);
 }
