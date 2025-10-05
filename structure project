@@ -1,7 +1,0 @@
-mmo-prototype/
-├─ server.js               <- Node.js + Socket.io
-├─ package.json
-└─ public/
-    ├─ index.html          <- canvas + UI mobile
-    ├─ style.css
-    └─ app.js              <- logic client
