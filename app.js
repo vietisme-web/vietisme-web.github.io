@@ -3,7 +3,6 @@ const ctx = canvas.getContext('2d');
 const gridSize = 8;
 const cellSize = 50;
 let score = 0;
-let combo = 0;
 
 // grid 8x8
 let grid = [];
@@ -21,54 +20,49 @@ function randomColor(){
 
 // block shapes 1x1 → 3x3 + L-shape
 const shapes = [
-    [[1]], // 1x1
-    [[1,1]], // 2x1
-    [[1],[1]], // 1x2
-    [[1,1],[1,0]], // L
-    [[1,1],[0,1]], // L rotated
-    [[1,1],[1,1]], // 2x2
-    [[1,1,1],[1,0,0],[1,0,0]] // 3x3
+    [[1]], 
+    [[1,1]], 
+    [[1],[1]], 
+    [[1,1],[1,0]], 
+    [[1,1],[0,1]], 
+    [[1,1],[1,1]], 
+    [[1,1,1],[1,0,0],[1,0,0]]
 ];
 
 let blocks = [];
 function generateBlock(){
     const shape = shapes[Math.floor(Math.random()*shapes.length)];
     const color = randomColor();
-    blocks.push({shape,color,x:10,y:420});
+    // khởi tạo block ở dưới lưới, nhưng trong canvas
+    const x = 10 + Math.random()* (canvas.width-100);
+    const y = canvas.height - 100 + Math.random()*50;
+    blocks.push({shape,color,x,y});
 }
 for(let i=0;i<3;i++) generateBlock();
 
 let selectedBlock = null;
 let offsetX=0, offsetY=0;
 
-// mouse events
-canvas.addEventListener('mousedown', e=>{
-    const mx=e.offsetX, my=e.offsetY;
-    selectBlock(mx,my);
-});
+// mouse & touch events
+function getMousePos(e){
+    const rect=canvas.getBoundingClientRect();
+    if(e.touches) return {x:e.touches[0].clientX - rect.left, y:e.touches[0].clientY - rect.top};
+    return {x:e.offsetX, y:e.offsetY};
+}
+
+canvas.addEventListener('mousedown', e=>selectBlock(getMousePos(e).x,getMousePos(e).y));
 canvas.addEventListener('mousemove', e=>{
     if(selectedBlock){
-        selectedBlock.x=e.offsetX-offsetX;
-        selectedBlock.y=e.offsetY-offsetY;
+        const pos=getMousePos(e);
+        selectedBlock.x = pos.x - offsetX;
+        selectedBlock.y = pos.y - offsetY;
     }
 });
 canvas.addEventListener('mouseup', tryPlace);
 
-// touch events
-canvas.addEventListener('touchstart', e=>{
-    const rect = canvas.getBoundingClientRect();
-    const mx = e.touches[0].clientX - rect.left;
-    const my = e.touches[0].clientY - rect.top;
-    selectBlock(mx,my);
-});
-canvas.addEventListener('touchmove', e=>{
-    if(selectedBlock){
-        const rect = canvas.getBoundingClientRect();
-        selectedBlock.x = e.touches[0].clientX - rect.left - offsetX;
-        selectedBlock.y = e.touches[0].clientY - rect.top - offsetY;
-    }
-});
-canvas.addEventListener('touchend', tryPlace);
+canvas.addEventListener('touchstart', e=>{e.preventDefault(); const pos=getMousePos(e); selectBlock(pos.x,pos.y);});
+canvas.addEventListener('touchmove', e=>{e.preventDefault(); if(selectedBlock){const pos=getMousePos(e); selectedBlock.x=pos.x-offsetX; selectedBlock.y=pos.y-offsetY;}});
+canvas.addEventListener('touchend', e=>{e.preventDefault(); tryPlace();});
 
 function selectBlock(mx,my){
     blocks.forEach(b=>{
@@ -118,20 +112,21 @@ function placeBlock(gx,gy,shape,color){
             if(shape[i][j]) grid[gy+i][gx+j]={color};
         }
     }
-    checkFull();
     score += shape.flat().reduce((a,b)=>a+b,0);
     document.getElementById('score').innerText="Score: "+score;
+    checkFull();
 }
 
+// xóa hàng/cột + animation
 function checkFull(){
-    combo=0;
+    let combo=0;
     // rows
     for(let y=0;y<gridSize;y++){
         if(grid[y].every(c=>c)){
             combo++;
-            const rowColor = grid[y][0].color;
+            const color = grid[y][0].color;
             for(let x=0;x<gridSize;x++){
-                animateClear(x,y,rowColor);
+                animateClear(x,y,color);
                 grid[y][x]=null;
             }
         }
@@ -139,23 +134,21 @@ function checkFull(){
     // cols
     for(let x=0;x<gridSize;x++){
         let full=true;
-        for(let y=0;y<gridSize;y++){
-            if(!grid[y][x]) full=false;
-        }
+        for(let y=0;y<gridSize;y++) if(!grid[y][x]) full=false;
         if(full){
             combo++;
-            const colColor = grid[0][x].color;
+            const color = grid[0][x].color;
             for(let y=0;y<gridSize;y++){
-                animateClear(x,y,colColor);
+                animateClear(x,y,color);
                 grid[y][x]=null;
             }
         }
     }
-    if(combo>1) score+=combo*50; // bonus
+    if(combo>1) score += combo*50;
     document.getElementById('score').innerText="Score: "+score;
 }
 
-// simple animation
+// animation liền khối
 function animateClear(x,y,color){
     let alpha=1;
     function fade(){
@@ -163,7 +156,7 @@ function animateClear(x,y,color){
         if(alpha<=0) return;
         ctx.fillStyle=color;
         ctx.globalAlpha=alpha;
-        ctx.fillRect(x*cellSize,y*cellSize,cellSize,cellSize); // **liền block**
+        ctx.fillRect(x*cellSize,y*cellSize,cellSize,cellSize);
         ctx.globalAlpha=1;
         requestAnimationFrame(fade);
     }
@@ -176,24 +169,18 @@ function draw(){
     // grid
     for(let y=0;y<gridSize;y++){
         for(let x=0;x<gridSize;x++){
-            if(grid[y][x]){
-                ctx.fillStyle=grid[y][x].color;
-                ctx.fillRect(x*cellSize,y*cellSize,cellSize,cellSize);
-            } else {
-                ctx.fillStyle='#333';
-                ctx.fillRect(x*cellSize,y*cellSize,cellSize,cellSize);
-            }
+            if(grid[y][x]) ctx.fillStyle=grid[y][x].color;
+            else ctx.fillStyle='#333';
+            ctx.fillRect(x*cellSize,y*cellSize,cellSize,cellSize);
         }
     }
-    // blocks to place
-    blocks.forEach((b,i)=>{
-        // đặt block ở dưới canvas để nhìn thấy
-        if(i==0){ b.x=10; b.y=420; }
-        for(let i2=0;i2<b.shape.length;i2++){
-            for(let j2=0;j2<b.shape[i2].length;j2++){
-                if(b.shape[i2][j2]){
+    // blocks sẵn sàng kéo
+    blocks.forEach(b=>{
+        for(let i=0;i<b.shape.length;i++){
+            for(let j=0;j<b.shape[i].length;j++){
+                if(b.shape[i][j]){
                     ctx.fillStyle=b.color;
-                    ctx.fillRect(b.x+j2*cellSize,b.y+i2*cellSize,cellSize,cellSize);
+                    ctx.fillRect(b.x+j*cellSize,b.y+i*cellSize,cellSize,cellSize);
                 }
             }
         }
