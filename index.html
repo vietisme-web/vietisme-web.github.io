@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Mini Wormate Clone</title>
+<style>
+  html,body{height:100%;margin:0;background:#0b1220;display:flex;align-items:center;justify-content:center;font-family:Arial}
+  canvas{background:linear-gradient(180deg,#071021,#0b1220);box-shadow:0 8px 30px rgba(0,0,0,0.6);border-radius:8px}
+  #hud{position:fixed;top:20px;left:20px;color:#cfe9ff}
+  button{margin-left:10px;padding:6px 10px;border-radius:6px;border:none;background:#1b6fb8;color:white;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="hud">
+  score: <span id="score">0</span>
+  <button onclick="restart()">Restart</button>
+</div>
+<canvas id="game" width="900" height="600"></canvas>
+
+<script>
+// simple wormate-like single-player clone
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+let mouse = {x: W/2, y: H/2};
+let boosting = false;
+
+window.addEventListener('mousemove', e=>{
+  const r = canvas.getBoundingClientRect();
+  mouse.x = e.clientX - r.left;
+  mouse.y = e.clientY - r.top;
+});
+window.addEventListener('mousedown', ()=> boosting=true);
+window.addEventListener('mouseup', ()=> boosting=false);
+window.addEventListener('keydown', e=>{ if(e.code==='Space') boosting=true });
+window.addEventListener('keyup', e=>{ if(e.code==='Space') boosting=false });
+
+// worm state
+let snake = [];
+let head = {x: W/2, y: H/2, angle: 0, speed: 2.2};
+let segmentDist = 8;
+let length = 20; // initial segments
+let food = [];
+let score = 0;
+let colors = {head:'#ffd166', body:'#ff8c42', food:'#7bed9f'};
+
+function init(){
+  snake = [];
+  head = {x: W/2 + Math.random()*100-50, y: H/2 + Math.random()*60-30, angle: 0, speed: 2.2};
+  length = 20;
+  score = 0;
+  spawnFood(20);
+  for(let i=0;i<length;i++){
+    snake.push({x: head.x - i*segmentDist, y: head.y, r: 7});
+  }
+  updateHUD();
+}
+function spawnFood(n=1){
+  for(let i=0;i<n;i++){
+    food.push({x: Math.random()*(W-40)+20, y: Math.random()*(H-40)+20, r:6 + Math.random()*6});
+  }
+}
+
+function update(dt){
+  // rotate head toward mouse smoothly
+  const dx = mouse.x - head.x;
+  const dy = mouse.y - head.y;
+  const target = Math.atan2(dy, dx);
+  // normalize angle difference
+  let diff = target - head.angle;
+  while(diff > Math.PI) diff -= 2*Math.PI;
+  while(diff < -Math.PI) diff += 2*Math.PI;
+  head.angle += diff * 0.12; // turning speed
+
+  // speed & boosting
+  let spd = head.speed * (boosting ? 2.0 : 1.0);
+
+  // move head
+  head.x += Math.cos(head.angle) * spd;
+  head.y += Math.sin(head.angle) * spd;
+
+  // wrap or block? wormate uses wrap; use wrap
+  if(head.x < -10) head.x = W+10;
+  if(head.x > W+10) head.x = -10;
+  if(head.y < -10) head.y = H+10;
+  if(head.y > H+10) head.y = -10;
+
+  // push head into snake
+  snake.unshift({x: head.x, y: head.y, r: 8 + Math.min(score*0.04,6)});
+  // trim tail based on desired length
+  while(distancePathLength(snake) > (length * segmentDist)){
+    snake.pop();
+  }
+
+  // check eat food
+  for(let i=food.length-1;i>=0;i--){
+    if(dist(food[i], head) < food[i].r + 8){
+      // eat
+      length += 6 + Math.floor(Math.random()*6);
+      score += Math.floor(1 + food[i].r);
+      food.splice(i,1);
+      spawnFood(1);
+      updateHUD();
+    }
+  }
+
+  // self collision simple: check head against body (skip first few segments)
+  for(let i=12;i<snake.length;i+=1){
+    if(dist(head, snake[i]) < snake[i].r + 6){
+      // collision -> reset
+      // small penalty animation could be added
+      init();
+      return;
+    }
+  }
+}
+
+function draw(){
+  // clear
+  ctx.clearRect(0,0,W,H);
+
+  // draw food
+  for(let f of food){
+    ctx.beginPath();
+    ctx.fillStyle = colors.food;
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 8;
+    ctx.arc(f.x, f.y, f.r, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  // draw body (from tail to head for nice overlap)
+  for(let i=snake.length-1;i>=0;i--){
+    const s = snake[i];
+    const t = i / snake.length;
+    const radius = 6 + (1 - t) * 8;
+    ctx.beginPath();
+    ctx.fillStyle = lerpColor(colors.body, '#742100', t);
+    ctx.globalAlpha = 0.95;
+    ctx.arc(s.x, s.y, radius, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+
+  // head
+  ctx.save();
+  ctx.translate(head.x, head.y);
+  ctx.rotate(head.angle);
+  // head glow
+  ctx.beginPath();
+  ctx.fillStyle = colors.head;
+  ctx.shadowColor = 'rgba(255,200,100,0.6)';
+  ctx.shadowBlur = 18;
+  ctx.arc(0,0,12,0,Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  // mouth triangle
+  ctx.fillStyle = '#2b2b2b';
+  ctx.beginPath();
+  ctx.moveTo(8,0);
+  ctx.lineTo(18,6);
+  ctx.lineTo(18,-6);
+  ctx.closePath();
+  ctx.fill();
+  ctx.restore();
+
+  // optional: draw score center
+  ctx.fillStyle = 'rgba(255,255,255,0.06)';
+  ctx.font = '120px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(score, W/2, H/2+40);
+}
+
+let last = performance.now();
+function loop(now){
+  const dt = (now - last)/16.666;
+  last = now;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function distancePathLength(arr){
+  let d=0;
+  for(let i=0;i+1<arr.length;i++){
+    d += Math.hypot(arr[i].x - arr[i+1].x, arr[i].y - arr[i+1].y);
+  }
+  return d;
+}
+function dist(a,b){ return Math.hypot(a.x - b.x, a.y - b.y); }
+function lerp(a,b,t){ return a + (b-a)*t; }
+function lerpColor(hex1, hex2, t){
+  const c1 = hexToRgb(hex1), c2 = hexToRgb(hex2);
+  const r = Math.round(lerp(c1.r,c2.r,t));
+  const g = Math.round(lerp(c1.g,c2.g,t));
+  const b = Math.round(lerp(c1.b,c2.b,t));
+  return `rgb(${r},${g},${b})`;
+}
+function hexToRgb(h){
+  h = h.replace('#','');
+  if(h.length===3) h = h.split('').map(x=>x+x).join('');
+  return {r:parseInt(h.slice(0,2),16), g:parseInt(h.slice(2,4),16), b:parseInt(h.slice(4,6),16)};
+}
+
+function updateHUD(){ document.getElementById('score').innerText = score; }
+function restart(){ init(); }
+
+init();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
