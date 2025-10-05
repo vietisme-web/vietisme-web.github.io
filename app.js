@@ -1,5 +1,6 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+
 const gridSize = 8;
 const cellSize = 50;
 let score = 0;
@@ -11,7 +12,7 @@ for(let y=0;y<gridSize;y++){
     grid.push(Array(gridSize).fill(null));
 }
 
-// colors riêng theo shape index
+// colors cho shape
 const shapeColors = [
     '#ff6666','#66ff66','#6666ff','#ffcc66','#66ffff','#cc66ff','#ff66cc'
 ];
@@ -38,7 +39,7 @@ function generateBlocks(){
         const color = shapeColors[shapeIndex % shapeColors.length];
         const x = 20 + i*180;
         const y = startY;
-        blocks.push({shape,color,x,y,placed:false});
+        blocks.push({shape,color,x,y,placed:false,initX:x,initY:y});
     }
 }
 generateBlocks();
@@ -96,9 +97,8 @@ function dropBlock(){
         generateNextBlocksIfNeeded();
     } else {
         // trả block về vị trí cũ
-        const index = blocks.indexOf(selectedBlock);
-        selectedBlock.x = 20 + index*180;
-        selectedBlock.y = gridSize*cellSize + 20;
+        selectedBlock.x = selectedBlock.initX;
+        selectedBlock.y = selectedBlock.initY;
     }
     selectedBlock=null;
 }
@@ -126,9 +126,9 @@ function placeBlock(gx,gy,shape,color){
         }
     }
     score += shape.flat().reduce((a,b)=>a+b,0);
-    document.getElementById('score').innerText="Score: "+score;
 }
 
+// check xóa row/col và combo
 function checkFull(){
     let combo=0;
     // rows
@@ -157,7 +157,6 @@ function checkFull(){
     }
     if(combo>0){
         score += combo*50*combo;
-        document.getElementById('score').innerText="Score: "+score;
     }
 }
 
@@ -207,9 +206,8 @@ function draw(){
     // bảng xếp hạng góc trên phải
     ctx.fillStyle='white';
     ctx.font='18px Arial';
-    ctx.fillText('Bảng Xếp Hạng', canvas.width-160, 20);
-    ctx.fillText('Score: '+score, canvas.width-160, 50);
-    ctx.fillText('By: VietB11', canvas.width-160, 80);
+    ctx.fillText('Score: '+score, canvas.width-140, 30);
+    ctx.fillText('By: VietB11', canvas.width-140, 60);
 
     requestAnimationFrame(draw);
 }
