@@ -124,14 +124,14 @@ function placeBlock(gx,gy,shape,color){
 }
 
 function checkFull(){
-    let cleared=false;
     combo=0;
     // rows
     for(let y=0;y<gridSize;y++){
         if(grid[y].every(c=>c)){
             combo++;
+            const rowColor = grid[y][0].color;
             for(let x=0;x<gridSize;x++){
-                animateClear(x,y,grid[y][x].color);
+                animateClear(x,y,rowColor);
                 grid[y][x]=null;
             }
         }
@@ -144,15 +144,15 @@ function checkFull(){
         }
         if(full){
             combo++;
+            const colColor = grid[0][x].color;
             for(let y=0;y<gridSize;y++){
-                animateClear(x,y,grid[y][x].color);
+                animateClear(x,y,colColor);
                 grid[y][x]=null;
             }
         }
     }
     if(combo>1) score+=combo*50; // bonus
     document.getElementById('score').innerText="Score: "+score;
-    updateLeaderboard();
 }
 
 // simple animation
@@ -163,26 +163,11 @@ function animateClear(x,y,color){
         if(alpha<=0) return;
         ctx.fillStyle=color;
         ctx.globalAlpha=alpha;
-        ctx.fillRect(x*cellSize,y*cellSize,cellSize-2,cellSize-2);
+        ctx.fillRect(x*cellSize,y*cellSize,cellSize,cellSize); // **liền block**
         ctx.globalAlpha=1;
         requestAnimationFrame(fade);
     }
     fade();
-}
-
-// offline leaderboard
-let leaderboard=[];
-function updateLeaderboard(){
-    leaderboard.push(score);
-    leaderboard.sort((a,b)=>b-a);
-    leaderboard=leaderboard.slice(0,5);
-    const lb = document.getElementById('leaderboard');
-    lb.innerHTML='';
-    leaderboard.forEach(s=>{
-        const li=document.createElement('li');
-        li.innerText=s;
-        lb.appendChild(li);
-    });
 }
 
 // draw
@@ -191,17 +176,24 @@ function draw(){
     // grid
     for(let y=0;y<gridSize;y++){
         for(let x=0;x<gridSize;x++){
-            ctx.fillStyle=grid[y][x]?grid[y][x].color:'#333';
-            ctx.fillRect(x*cellSize,y*cellSize,cellSize-2,cellSize-2);
+            if(grid[y][x]){
+                ctx.fillStyle=grid[y][x].color;
+                ctx.fillRect(x*cellSize,y*cellSize,cellSize,cellSize);
+            } else {
+                ctx.fillStyle='#333';
+                ctx.fillRect(x*cellSize,y*cellSize,cellSize,cellSize);
+            }
         }
     }
     // blocks to place
-    blocks.forEach(b=>{
-        for(let i=0;i<b.shape.length;i++){
-            for(let j=0;j<b.shape[i].length;j++){
-                if(b.shape[i][j]){
+    blocks.forEach((b,i)=>{
+        // đặt block ở dưới canvas để nhìn thấy
+        if(i==0){ b.x=10; b.y=420; }
+        for(let i2=0;i2<b.shape.length;i2++){
+            for(let j2=0;j2<b.shape[i2].length;j2++){
+                if(b.shape[i2][j2]){
                     ctx.fillStyle=b.color;
-                    ctx.fillRect(b.x+j*cellSize,b.y+i*cellSize,cellSize-2,cellSize-2);
+                    ctx.fillRect(b.x+j2*cellSize,b.y+i2*cellSize,cellSize,cellSize);
                 }
             }
         }
