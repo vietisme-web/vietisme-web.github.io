@@ -29,13 +29,13 @@ const shapes = [
     [[1,1,1],[1,0,0],[1,0,0]]
 ];
 
+// blocks chờ kéo thả
 let blocks = [];
 function generateBlock(){
     const shape = shapes[Math.floor(Math.random()*shapes.length)];
     const color = randomColor();
-    // khởi tạo block ở dưới lưới, nhưng trong canvas
-    const x = 10 + Math.random()* (canvas.width-100);
-    const y = canvas.height - 100 + Math.random()*50;
+    const x = 10 + Math.random()*(canvas.width-100);
+    const y = canvas.height - 80; // nằm dưới canvas
     blocks.push({shape,color,x,y});
 }
 for(let i=0;i<3;i++) generateBlock();
@@ -43,7 +43,7 @@ for(let i=0;i<3;i++) generateBlock();
 let selectedBlock = null;
 let offsetX=0, offsetY=0;
 
-// mouse & touch events
+// mouse & touch
 function getMousePos(e){
     const rect=canvas.getBoundingClientRect();
     if(e.touches) return {x:e.touches[0].clientX - rect.left, y:e.touches[0].clientY - rect.top};
@@ -117,27 +117,25 @@ function placeBlock(gx,gy,shape,color){
     checkFull();
 }
 
-// xóa hàng/cột + animation
+// check rows/cols + animation
 function checkFull(){
     let combo=0;
-    // rows
     for(let y=0;y<gridSize;y++){
         if(grid[y].every(c=>c)){
             combo++;
-            const color = grid[y][0].color;
+            const color=grid[y][0].color;
             for(let x=0;x<gridSize;x++){
                 animateClear(x,y,color);
                 grid[y][x]=null;
             }
         }
     }
-    // cols
     for(let x=0;x<gridSize;x++){
         let full=true;
         for(let y=0;y<gridSize;y++) if(!grid[y][x]) full=false;
         if(full){
             combo++;
-            const color = grid[0][x].color;
+            const color=grid[0][x].color;
             for(let y=0;y<gridSize;y++){
                 animateClear(x,y,color);
                 grid[y][x]=null;
@@ -148,7 +146,7 @@ function checkFull(){
     document.getElementById('score').innerText="Score: "+score;
 }
 
-// animation liền khối
+// animation liền block
 function animateClear(x,y,color){
     let alpha=1;
     function fade(){
@@ -158,6 +156,8 @@ function animateClear(x,y,color){
         ctx.globalAlpha=alpha;
         ctx.fillRect(x*cellSize,y*cellSize,cellSize,cellSize);
         ctx.globalAlpha=1;
+        ctx.strokeStyle='#fff';
+        ctx.strokeRect(x*cellSize,y*cellSize,cellSize,cellSize);
         requestAnimationFrame(fade);
     }
     fade();
@@ -166,21 +166,24 @@ function animateClear(x,y,color){
 // draw
 function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    // grid
+    // draw grid
     for(let y=0;y<gridSize;y++){
         for(let x=0;x<gridSize;x++){
-            if(grid[y][x]) ctx.fillStyle=grid[y][x].color;
-            else ctx.fillStyle='#333';
+            ctx.fillStyle=grid[y][x]?grid[y][x].color:'#333';
             ctx.fillRect(x*cellSize,y*cellSize,cellSize,cellSize);
+            ctx.strokeStyle='#fff';
+            ctx.strokeRect(x*cellSize,y*cellSize,cellSize,cellSize);
         }
     }
-    // blocks sẵn sàng kéo
+    // draw blocks chờ kéo
     blocks.forEach(b=>{
         for(let i=0;i<b.shape.length;i++){
             for(let j=0;j<b.shape[i].length;j++){
                 if(b.shape[i][j]){
                     ctx.fillStyle=b.color;
                     ctx.fillRect(b.x+j*cellSize,b.y+i*cellSize,cellSize,cellSize);
+                    ctx.strokeStyle='#fff';
+                    ctx.strokeRect(b.x+j*cellSize,b.y+i*cellSize,cellSize,cellSize);
                 }
             }
         }
