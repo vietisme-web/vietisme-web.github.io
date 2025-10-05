@@ -1,4 +1,6 @@
 const canvas = document.getElementById('gameCanvas');
+canvas.width = 8*50 + 40; // grid + padding
+canvas.height = 8*50 + 150; // grid + chỗ block chờ
 const ctx = canvas.getContext('2d');
 
 const gridSize = 8;
@@ -30,7 +32,7 @@ const shapes = [
 let blocks = [];
 function generateBlocks(){
     blocks=[];
-    const startY = gridSize*cellSize + 20; // dưới grid
+    const startY = gridSize*cellSize + 20; // hiển thị bên dưới grid
     for(let i=0;i<3;i++){
         const shapeIndex = Math.floor(Math.random()*shapes.length);
         const shape = shapes[shapeIndex];
@@ -86,7 +88,6 @@ function dropBlock(){
     if(canPlace(gx,gy,selectedBlock.shape)){
         placeBlock(gx,gy,selectedBlock.shape,selectedBlock.color);
         selectedBlock.placed=true;
-        checkFull();
         generateNextBlocksIfNeeded();
     } else {
         // trả block về vị trí cũ
@@ -122,7 +123,6 @@ function placeBlock(gx,gy,shape,color){
 
 // check xóa row/col
 function checkFull(){
-    // rows
     for(let y=0;y<gridSize;y++){
         if(grid[y].every(c=>c)){
             const color=grid[y][0].color;
@@ -132,7 +132,6 @@ function checkFull(){
             }
         }
     }
-    // cols
     for(let x=0;x<gridSize;x++){
         let full=true;
         for(let y=0;y<gridSize;y++) if(!grid[y][x]) full=false;
@@ -175,7 +174,7 @@ function draw(){
         }
     }
 
-    // draw blocks chờ dưới lưới
+    // draw blocks chờ
     for(let b of blocks){
         for(let i=0;i<b.shape.length;i++){
             for(let j=0;j<b.shape[i].length;j++){
