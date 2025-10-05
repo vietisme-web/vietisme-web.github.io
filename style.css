@@ -1,5 +1,0 @@
-body { text-align:center; font-family:sans-serif; background:#222; color:#fff; position:relative;}
-#gameCanvas { border:2px solid #fff; background:#333; display:block; margin:20px auto;}
-#score { font-size:18px;}
-#leaderboard { max-width:200px; margin:0 auto;}
-#by { position:absolute; top:10px; left:10px; font-size:14px; color:#0f0;}
