@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Real-time Chess</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard.min.css">
+<style>
+  body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;margin-top:20px;}
+  #board{width: 400px;}
+  #status{margin-top:10px;}
+</style>
+</head>
+<body>
+<h2>Real-time Chess =))</h2>
+<div id="board"></div>
+<div id="status">Connecting...</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard.min.js"></script>
+<script>
+var game = new Chess();
+var board = Chessboard('board', {
+  draggable:true,
+  position:'start',
+  onDrop: function(source,target){
+    var move = game.move({from:source,to:target,promotion:'q'});
+    if(move === null) return 'snapback';
+    ws.send(JSON.stringify({type:'move', move:move}));
+    updateStatus();
+  }
+});
+
+function updateStatus(){
+  var status = '';
+  if(game.in_checkmate()){status = 'Checkmate! '+(game.turn()==='w'?'Black':'White')+' wins';}
+  else if(game.in_draw()){status = 'Draw!';}
+  else{status = (game.turn()==='w'?'White':'Black')+' to move'; if(game.in_check()) status+=' (Check!)';}
+  document.getElementById('status').innerText = status;
+}
+
+// ----- WebSocket -----
+var ws = new WebSocket('ws://localhost:8080');
+ws.onopen = function(){document.getElementById('status').innerText='Connected';};
+ws.onmessage = function(event){
+  var data = JSON.parse(event.data);
+  if(data.type==='move'){
+    game.move(data.move);
+    board.position(game.fen());
+    updateStatus();
+  }
+};
+</script>
+</body>
+</html>
