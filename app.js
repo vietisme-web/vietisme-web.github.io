@@ -31,7 +31,7 @@ const shapes = [
 let blocks = [];
 function generateBlocks(){
     blocks=[];
-    const startY = gridSize*cellSize + 30; // dưới grid, sát bảng xếp hạng
+    const startY = gridSize*cellSize + 20; // dưới grid
     for(let i=0;i<3;i++){
         const shapeIndex = Math.floor(Math.random()*shapes.length);
         const shape = shapes[shapeIndex];
@@ -98,7 +98,7 @@ function dropBlock(){
         // trả block về vị trí cũ
         const index = blocks.indexOf(selectedBlock);
         selectedBlock.x = 20 + index*180;
-        selectedBlock.y = gridSize*cellSize + 30;
+        selectedBlock.y = gridSize*cellSize + 20;
     }
     selectedBlock=null;
 }
@@ -190,7 +190,7 @@ function draw(){
         }
     }
 
-    // draw blocks chờ dưới bảng xếp hạng
+    // draw blocks chờ dưới lưới
     for(let b of blocks){
         for(let i=0;i<b.shape.length;i++){
             for(let j=0;j<b.shape[i].length;j++){
@@ -204,12 +204,12 @@ function draw(){
         }
     }
 
-    // bảng xếp hạng góc phải
+    // bảng xếp hạng góc trên phải
     ctx.fillStyle='white';
     ctx.font='18px Arial';
-    ctx.fillText('Bảng Xếp Hạng', canvas.width-140, 20);
-    ctx.fillText('Score: '+score, canvas.width-140, 50);
-    ctx.fillText('By: VietB11', canvas.width-140, 80);
+    ctx.fillText('Bảng Xếp Hạng', canvas.width-160, 20);
+    ctx.fillText('Score: '+score, canvas.width-160, 50);
+    ctx.fillText('By: VietB11', canvas.width-160, 80);
 
     requestAnimationFrame(draw);
 }
