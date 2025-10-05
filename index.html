@@ -2,53 +2,94 @@
 <html>
 <head>
 <meta charset="utf-8">
-<title>Real-time Chess</title>
+<title>Pro Chess P2P</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard.min.css">
 <style>
-  body{font-family:sans-serif;display:flex;flex-direction:column;align-items:center;margin-top:20px;}
-  #board{width: 400px;}
-  #status{margin-top:10px;}
+  body{font-family:sans-serif;background:#f0f0f0;display:flex;flex-direction:column;align-items:center;margin:0;padding:20px;}
+  #board{width: 450px;margin-top:20px;}
+  #controls{margin:15px;}
+  button{margin:0 5px;padding:6px 12px;background:#0077cc;color:white;border:none;border-radius:4px;cursor:pointer;}
+  button:hover{background:#005fa3;}
+  #status{margin-top:10px;font-weight:bold;color:#333;}
+  #linkInput{width:300px;padding:5px;}
 </style>
 </head>
 <body>
-<h2>Real-time Chess =))</h2>
+
+<h2>Pro Chess P2P =))</h2>
+
 <div id="board"></div>
-<div id="status">Connecting...</div>
+
+<div id="controls">
+  <button onclick="resetBoard()">Reset</button>
+  <button onclick="undoMove()">Undo</button>
+</div>
+
+<div id="status">Not connected</div>
+
+<input type="text" id="linkInput" placeholder="Paste friend ID here" />
+<button onclick="connectPeer()">Connect</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/1.0.0/chess.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.4.7/dist/peerjs.min.js"></script>
+
 <script>
 var game = new Chess();
 var board = Chessboard('board', {
   draggable:true,
   position:'start',
-  onDrop: function(source,target){
+  onDrop:function(source,target){
     var move = game.move({from:source,to:target,promotion:'q'});
-    if(move === null) return 'snapback';
-    ws.send(JSON.stringify({type:'move', move:move}));
+    if(move===null) return 'snapback';
     updateStatus();
+    sendMove(move);
   }
 });
 
 function updateStatus(){
-  var status = '';
-  if(game.in_checkmate()){status = 'Checkmate! '+(game.turn()==='w'?'Black':'White')+' wins';}
-  else if(game.in_draw()){status = 'Draw!';}
-  else{status = (game.turn()==='w'?'White':'Black')+' to move'; if(game.in_check()) status+=' (Check!)';}
-  document.getElementById('status').innerText = status;
+  var status='';
+  if(game.in_checkmate()){status='Checkmate! '+(game.turn()==='w'?'Black':'White')+' wins';}
+  else if(game.in_draw()){status='Draw!';}
+  else{status=(game.turn()==='w'?'White':'Black')+' to move'; if(game.in_check()) status+=' (Check!)';}
+  document.getElementById('status').innerText=status;
 }
 
-// ----- WebSocket -----
-var ws = new WebSocket('ws://localhost:8080');
-ws.onopen = function(){document.getElementById('status').innerText='Connected';};
-ws.onmessage = function(event){
-  var data = JSON.parse(event.data);
-  if(data.type==='move'){
-    game.move(data.move);
-    board.position(game.fen());
-    updateStatus();
-  }
-};
+function resetBoard(){game.reset();board.start();updateStatus();sendMove({reset:true});}
+function undoMove(){game.undo();board.position(game.fen());updateStatus();sendMove({undo:true});}
+
+// ----- WebRTC P2P với PeerJS -----
+var peer = new Peer();
+var conn;
+
+peer.on('open', function(id){
+  document.getElementById('status').innerText='Your ID: '+id;
+});
+
+peer.on('connection', function(c){
+  conn = c;
+  setupConnection();
+});
+
+function connectPeer(){
+  var friendId = document.getElementById('linkInput').value;
+  conn = peer.connect(friendId);
+  setupConnection();
+}
+
+function setupConnection(){
+  conn.on('open', function(){document.getElementById('status').innerText='Connected';});
+  conn.on('data', function(data){
+    if(data.reset){game.reset();board.start();updateStatus();}
+    else if(data.undo){game.undo();board.position(game.fen());updateStatus();}
+    else{game.move(data);board.position(game.fen());updateStatus();}
+  });
+}
+
+function sendMove(move){
+  if(conn && conn.open) conn.send(move);
+}
 </script>
+
 </body>
 </html>
